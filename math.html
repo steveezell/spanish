@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#EA580C">
+  <title>Math</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; height: 100%; overflow: hidden; touch-action: manipulation; }
+    body {
+      font-family: 'Nunito', -apple-system, 'Helvetica Neue', Arial, sans-serif;
+      display: flex; flex-direction: column; height: 100dvh; background: #111;
+    }
+    #card {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      background: linear-gradient(160deg, #FB923C, #C2410C);
+      position: relative; overflow: hidden;
+      cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent;
+    }
+    #card::after {
+      content: ''; position: absolute; inset: 0; background: transparent;
+      transition: background 0.12s; pointer-events: none;
+    }
+    #card:active::after { background: rgba(0,0,0,0.12); }
+    .problem {
+      display: flex; align-items: center; justify-content: center;
+      gap: clamp(6px, 2vw, 20px);
+      font-size: clamp(80px, 22vw, 200px); font-weight: 900; line-height: 1;
+    }
+    .num { color: #fff; text-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+    .op  { color: #FDE68A; text-shadow: 0 4px 20px rgba(0,0,0,0.25); }
+    .eq  { color: rgba(255,255,255,0.5); font-size: 0.75em; }
+    .slide-in { animation: slideUp 0.28s cubic-bezier(0.34,1.56,0.64,1); }
+    @keyframes slideUp { from { transform: translateY(28px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    #card-badge {
+      position: absolute; top: 14px; right: 14px; font-size: 16px;
+      font-weight: 800; color: rgba(255,255,255,0.55); pointer-events: none;
+    }
+    #bottom-bar {
+      background: #fff; height: 100px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      gap: 10px; padding: 0 16px; box-shadow: 0 -3px 16px rgba(0,0,0,0.18);
+    }
+    #prob-display {
+      font-size: clamp(32px, 8vw, 60px); font-weight: 900; letter-spacing: -0.01em;
+      pointer-events: none; user-select: none;
+      display: flex; align-items: center; gap: 0.12em;
+    }
+    #prob-display .dn { color: #EA580C; }
+    #prob-display .do { color: #1D4ED8; }
+    .btn {
+      background: none; border: none; cursor: pointer; font-size: 34px;
+      padding: 8px; border-radius: 50%; transition: transform 0.1s, background 0.1s;
+      -webkit-tap-highlight-color: transparent; line-height: 1; flex-shrink: 0;
+    }
+    .btn:active { transform: scale(0.88); background: rgba(0,0,0,0.06); }
+    #mic-btn.listening { animation: pulse 0.75s ease-in-out infinite; }
+    @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.28); } }
+    #skip-btn { font-size: 26px; opacity: 0.5; }
+    #home-btn  { font-size: 26px; opacity: 0.5; }
+    #celebration { position: fixed; inset: 0; pointer-events: none; z-index: 1000; display: flex; align-items: center; justify-content: center; }
+    .confetti-wrap { position: absolute; inset: 0; overflow: hidden; }
+    .cp { position: absolute; animation: cfall linear forwards; }
+    @keyframes cfall { from { transform: translateY(-80px) rotate(0deg); opacity: 1; } to { transform: translateY(110vh) rotate(600deg); opacity: 0; } }
+    .big-answer {
+      font-family: 'Nunito', sans-serif; font-size: clamp(64px, 18vw, 160px); font-weight: 900;
+      background: rgba(255,255,255,0.93); border-radius: 20px; padding: 12px 48px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.25); animation: popIn 0.35s cubic-bezier(0.34,1.56,0.64,1);
+      color: #EA580C;
+    }
+    @keyframes popIn { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .shake { animation: shake 0.38s ease-in-out; }
+    @keyframes shake { 0%,100%{transform:translateX(0);}20%{transform:translateX(-10px);}40%{transform:translateX(10px);}60%{transform:translateX(-8px);}80%{transform:translateX(5px);} }
+    #toast {
+      position: fixed; bottom: 116px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.72); color: #fff; padding: 8px 18px;
+      border-radius: 20px; font-size: 14px; font-weight: 800;
+      white-space: nowrap; display: none; z-index: 500;
+    }
+  </style>
+</head>
+<body>
+<div id="card">
+  <div class="problem slide-in" id="problem">
+    <span class="num" id="num-a">8</span>
+    <span class="op"  id="op">+</span>
+    <span class="num" id="num-b">5</span>
+    <span class="eq">=&nbsp;?</span>
+  </div>
+  <span id="card-badge">1/176</span>
+</div>
+<div id="bottom-bar">
+  <button class="btn" id="home-btn"  aria-label="Home">🏠</button>
+  <button class="btn" id="speak-btn" aria-label="Hear problem">🔊</button>
+  <div id="prob-display">
+    <span class="dn" id="pd-a">8</span>
+    <span class="do" id="pd-op">+</span>
+    <span class="dn" id="pd-b">5</span>
+    <span class="do">=&nbsp;?</span>
+  </div>
+  <button class="btn" id="mic-btn"  aria-label="Say answer">🎤</button>
+  <button class="btn" id="skip-btn" aria-label="Next">➡️</button>
+</div>
+<div id="celebration"></div>
+<div id="toast"></div>
+<script>
+// All + and - facts: operands 0-10, results 0-20
+function genProblems() {
+  const p = [];
+  for (let a = 0; a <= 10; a++)
+    for (let b = 0; b <= 10; b++)
+      p.push({ a, op: '+', b, ans: a + b });
+  for (let a = 1; a <= 10; a++)
+    for (let b = 1; b <= a; b++)
+      p.push({ a, op: '-', b, ans: a - b });
+  // Fisher-Yates shuffle
+  for (let i = p.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [p[i], p[j]] = [p[j], p[i]];
+  }
+  return p;
+}
+
+const PROBLEMS = genProblems();
+
+// English number words → digit, plus common mishearings
+const W2N = {
+  zero:0, one:1, two:2, three:3, four:4, five:5, six:6, seven:7, eight:8, nine:9, ten:10,
+  eleven:11, twelve:12, thirteen:13, fourteen:14, fifteen:15, sixteen:16,
+  seventeen:17, eighteen:18, nineteen:19, twenty:20,
+  to:2, too:2, tu:2, won:1, ate:8, nein:9, tree:3, 'for':4, fore:4
+};
+
+const state = { idx: 0, mastered: new Set(), listening: false, celebrating: false };
+
+function loadProgress() {
+  try {
+    const d = JSON.parse(localStorage.getItem('math_v1') || 'null');
+    if (d) state.mastered = new Set(d.mastered || []);
+  } catch(_) {}
+}
+
+function saveProgress() {
+  try { localStorage.setItem('math_v1', JSON.stringify({ mastered: [...state.mastered] })); } catch(_) {}
+}
+
+const cur = () => PROBLEMS[state.idx];
+const probKey = p => p.a + p.op + p.b;
+
+function render(animate) {
+  const p = cur();
+  document.getElementById('num-a').textContent  = p.a;
+  document.getElementById('op').textContent      = p.op;
+  document.getElementById('num-b').textContent  = p.b;
+  document.getElementById('pd-a').textContent   = p.a;
+  document.getElementById('pd-op').textContent  = p.op;
+  document.getElementById('pd-b').textContent   = p.b;
+  document.getElementById('card-badge').textContent =
+    (state.idx + 1) + '/' + PROBLEMS.length +
+    (state.mastered.size ? '  ·  ✓ ' + state.mastered.size : '');
+  if (animate) anim('problem');
+}
+
+function anim(id) {
+  const el = document.getElementById(id);
+  el.classList.remove('slide-in'); void el.offsetWidth; el.classList.add('slide-in');
+}
+
+function next() {
+  state.idx = (state.idx + 1) % PROBLEMS.length;
+  render(true);
+}
+
+function speakProblem() {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const p = cur();
+  const u = new SpeechSynthesisUtterance(p.a + (p.op === '+' ? ' plus ' : ' minus ') + p.b);
+  u.lang = 'en-US'; u.rate = 0.82; u.pitch = 1.05;
+  window.speechSynthesis.speak(u);
+}
+
+function checkAnswer(transcript) {
+  const p = cur();
+  const t = transcript.toLowerCase().trim();
+  if (t.includes(String(p.ans))) return true;
+  for (const w of t.split(/\s+/))
+    if (W2N[w] === p.ans) return true;
+  return false;
+}
+
+function celebrate() {
+  if (state.celebrating) return;
+  state.celebrating = true;
+  state.mastered.add(probKey(cur()));
+  saveProgress();
+  const ov = document.getElementById('celebration');
+  ov.innerHTML = '';
+  const wrap = document.createElement('div');
+  wrap.className = 'confetti-wrap';
+  const EM = ['⭐','🌟','✨','🎉','🎊','🌈','💛','🧡','❤️'];
+  for (let i = 0; i < 28; i++) {
+    const cp = document.createElement('div'); cp.className = 'cp';
+    cp.textContent = EM[i % EM.length];
+    cp.style.cssText = 'left:' + Math.random()*100 + 'vw;top:-70px;font-size:' +
+      (18 + Math.random()*26) + 'px;animation-duration:' + (0.7 + Math.random()*0.9) +
+      's;animation-delay:' + Math.random()*0.35 + 's;';
+    wrap.appendChild(cp);
+  }
+  ov.appendChild(wrap);
+  const bw = document.createElement('div');
+  bw.className = 'big-answer';
+  bw.textContent = cur().ans;
+  ov.appendChild(bw);
+  setTimeout(() => {
+    ov.innerHTML = ''; state.celebrating = false;
+    next();
+    if (state.listening) tryListen();
+  }, 1600);
+}
+
+let recognition = null;
+
+function micUI(on) {
+  const b = document.getElementById('mic-btn');
+  b.textContent = on ? '🔴' : '🎤';
+  on ? b.classList.add('listening') : b.classList.remove('listening');
+}
+
+function tryListen() {
+  if (!recognition || !state.listening || state.celebrating) return;
+  try { recognition.start(); } catch(_) {}
+}
+
+function initSpeech() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    const b = document.getElementById('mic-btn');
+    b.style.opacity = '0.25'; b.disabled = true; return;
+  }
+  recognition = new SR();
+  recognition.lang = 'en-US'; recognition.continuous = false;
+  recognition.interimResults = false; recognition.maxAlternatives = 6;
+  recognition.onstart = () => micUI(true);
+  recognition.onend = () => {
+    if (state.listening && !state.celebrating) setTimeout(tryListen, 120);
+    else micUI(false);
+  };
+  recognition.onresult = e => {
+    for (let i = 0; i < e.results[0].length; i++) {
+      if (checkAnswer(e.results[0][i].transcript)) { celebrate(); return; }
+    }
+    shake();
+  };
+  recognition.onerror = e => {
+    if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+      state.listening = false; micUI(false);
+      toast('Microphone permission needed');
+    }
+  };
+}
+
+function startListening() {
+  if (!recognition) return;
+  if (state.listening) { state.listening = false; recognition.stop(); return; }
+  state.listening = true;
+  tryListen();
+}
+
+function shake() {
+  const el = document.getElementById('problem');
+  el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake');
+  setTimeout(() => el.classList.remove('shake'), 400);
+}
+
+function toast(msg, ms = 3000) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', ms);
+}
+
+document.getElementById('card')     .addEventListener('click', () => { if (!state.celebrating) next(); });
+document.getElementById('speak-btn').addEventListener('click', e => { e.stopPropagation(); speakProblem(); });
+document.getElementById('mic-btn') .addEventListener('click', e => { e.stopPropagation(); startListening(); });
+document.getElementById('skip-btn').addEventListener('click', e => { e.stopPropagation(); next(); });
+document.getElementById('home-btn').addEventListener('click', e => { e.stopPropagation(); window.location.href = 'index.html'; });
+
+loadProgress(); render(false); initSpeech();
+</script>
+</body>
+</html>

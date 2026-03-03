@@ -1,302 +1,62 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#2563EB">
-  <title>Sílabas</title>
+  <meta name="theme-color" content="#111">
+  <title>Games</title>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@800;900&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --blue: #2563EB; --blue-lt: #3B82F6;
-      --red: #DC2626;  --red-lt:  #EF4444;
-      --word-blue: #1D4ED8; --word-red: #B91C1C;
-    }
     html, body { width: 100%; height: 100%; overflow: hidden; touch-action: manipulation; }
     body {
       font-family: 'Nunito', -apple-system, 'Helvetica Neue', Arial, sans-serif;
-      display: flex; flex-direction: column; height: 100dvh; background: #111;
+      display: flex; height: 100dvh;
     }
-    #cards { display: flex; flex: 1; min-height: 0; }
     .panel {
       flex: 1; display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
+      align-items: center; justify-content: center; gap: 18px;
       cursor: pointer; position: relative; overflow: hidden;
-      -webkit-tap-highlight-color: transparent; user-select: none;
+      text-decoration: none; user-select: none;
+      -webkit-tap-highlight-color: transparent;
     }
     .panel::after {
       content: ''; position: absolute; inset: 0; background: transparent;
       transition: background 0.12s; pointer-events: none;
     }
-    .panel:active::after { background: rgba(0,0,0,0.12); }
-    #left-panel  { background: linear-gradient(160deg, var(--blue-lt), var(--blue)); border-right: 3px solid rgba(255,255,255,0.25); }
-    #right-panel { background: linear-gradient(160deg, var(--red-lt),  var(--red)); }
-    .syllable {
-      font-size: clamp(110px, 27vw, 240px); font-weight: 900; color: #fff;
-      text-shadow: 0 4px 20px rgba(0,0,0,0.2); letter-spacing: -0.02em;
-      line-height: 1; pointer-events: none;
+    .panel:active::after { background: rgba(0,0,0,0.14); }
+    #scout { background: linear-gradient(160deg, #FB923C, #EA580C); border-right: 3px solid rgba(255,255,255,0.25); }
+    #arbor { background: linear-gradient(160deg, #3B82F6, #2563EB); }
+    .kid-icon { font-size: clamp(44px, 10vw, 88px); line-height: 1; }
+    .kid-name {
+      font-size: clamp(72px, 19vw, 170px); font-weight: 900; color: #fff;
+      text-shadow: 0 4px 24px rgba(0,0,0,0.22); letter-spacing: -0.03em; line-height: 1;
     }
-    .slide-in { animation: slideUp 0.28s cubic-bezier(0.34,1.56,0.64,1); }
-    @keyframes slideUp { from { transform: translateY(28px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .kid-sub {
+      font-size: clamp(16px, 3.5vw, 28px); font-weight: 800;
+      color: rgba(255,255,255,0.6); letter-spacing: 0.04em; text-transform: uppercase;
+    }
     .tap-hint {
-      position: absolute; bottom: 14px; font-size: 22px; opacity: 0.45;
-      pointer-events: none; user-select: none; animation: bounce 2s ease-in-out infinite;
+      position: absolute; bottom: 22px; font-size: 22px; opacity: 0.45;
+      animation: bounce 2s ease-in-out infinite;
     }
-    @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
-    .group-badge {
-      position: absolute; top: 14px; right: 14px; font-size: 16px;
-      font-weight: 800; color: rgba(255,255,255,0.55); pointer-events: none; user-select: none;
-    }
-    .dots { position: absolute; bottom: 44px; display: flex; gap: 8px; pointer-events: none; }
-    .dot { width: 11px; height: 11px; border-radius: 50%; background: rgba(255,255,255,0.3); transition: all 0.2s; }
-    .dot.mastered { background: rgba(255,255,255,0.88); }
-    .dot.current  { background: #fff; transform: scale(1.45); box-shadow: 0 0 7px rgba(255,255,255,0.5); }
-    #bottom-bar {
-      background: #fff; height: 100px; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-      gap: 14px; padding: 0 20px; box-shadow: 0 -3px 16px rgba(0,0,0,0.18);
-    }
-    #word-display { font-size: clamp(48px, 10vw, 76px); font-weight: 900; letter-spacing: -0.01em; pointer-events: none; user-select: none; }
-    #word-display .w1 { color: var(--word-blue); }
-    #word-display .w2 { color: var(--word-red); }
-    .btn {
-      background: none; border: none; cursor: pointer; font-size: 34px;
-      padding: 8px; border-radius: 50%; transition: transform 0.1s, background 0.1s;
-      -webkit-tap-highlight-color: transparent; line-height: 1; flex-shrink: 0;
-    }
-    .btn:active { transform: scale(0.88); background: rgba(0,0,0,0.06); }
-    #mic-btn.listening { animation: pulse 0.75s ease-in-out infinite; }
-    @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.28); } }
-    #skip-btn { font-size: 26px; opacity: 0.5; }
-    #celebration { position: fixed; inset: 0; pointer-events: none; z-index: 1000; display: flex; align-items: center; justify-content: center; }
-    .confetti-wrap { position: absolute; inset: 0; overflow: hidden; }
-    .cp { position: absolute; animation: cfall linear forwards; }
-    @keyframes cfall { from { transform: translateY(-80px) rotate(0deg); opacity: 1; } to { transform: translateY(110vh) rotate(600deg); opacity: 0; } }
-    .big-word {
-      font-family: 'Nunito', sans-serif; font-size: clamp(48px, 12vw, 96px); font-weight: 900;
-      background: rgba(255,255,255,0.93); border-radius: 20px; padding: 12px 32px;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.25); animation: popIn 0.35s cubic-bezier(0.34,1.56,0.64,1);
-    }
-    .big-word .bw1 { color: var(--word-blue); }
-    .big-word .bw2 { color: var(--word-red); }
-    @keyframes popIn { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-    .shake { animation: shake 0.38s ease-in-out; }
-    @keyframes shake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-10px); } 40% { transform: translateX(10px); } 60% { transform: translateX(-8px); } 80% { transform: translateX(5px); } }
-    #toast {
-      position: fixed; bottom: 116px; left: 50%; transform: translateX(-50%);
-      background: rgba(0,0,0,0.72); color: #fff; padding: 8px 18px;
-      border-radius: 20px; font-size: 14px; font-weight: 800;
-      white-space: nowrap; display: none; z-index: 500;
-    }
+    @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
   </style>
 </head>
 <body>
-<div id="cards">
-  <div id="left-panel" class="panel" role="button" aria-label="Cambiar primera sílaba">
-    <span id="first-syl" class="syllable">ca</span>
-    <span class="group-badge" id="group-badge">1/30</span>
+  <a id="scout" class="panel" href="math.html">
+    <span class="kid-icon">➕</span>
+    <span class="kid-name">Scout</span>
+    <span class="kid-sub">Math</span>
     <span class="tap-hint">▼</span>
-  </div>
-  <div id="right-panel" class="panel" role="button" aria-label="Cambiar segunda sílaba">
-    <span id="second-syl" class="syllable">sa</span>
-    <div class="dots" id="dots"></div>
+  </a>
+  <a id="arbor" class="panel" href="silabas.html">
+    <span class="kid-icon">📖</span>
+    <span class="kid-name">Arbor</span>
+    <span class="kid-sub">Reading</span>
     <span class="tap-hint">▼</span>
-  </div>
-</div>
-<div id="bottom-bar">
-  <button class="btn" id="speak-btn" aria-label="Escuchar">🔊</button>
-  <div id="word-display">
-    <span class="w1" id="wd1">ca</span><span class="w2" id="wd2">sa</span>
-  </div>
-  <button class="btn" id="mic-btn" aria-label="Pronunciar">🎤</button>
-  <button class="btn" id="skip-btn" aria-label="Siguiente">➡️</button>
-</div>
-<div id="celebration"></div>
-<div id="toast"></div>
-<script>
-const GROUPS = [
-  { first: "ca", seconds: ["sa","ma","pa","ra","da"] },
-  { first: "ma", seconds: ["sa","pa","no","lo","ta","go"] },
-  { first: "pa", seconds: ["to","lo","la","pa","so","ta"] },
-  { first: "sa", seconds: ["la","co","po","na"] },
-  { first: "la", seconds: ["ta","zo","do","va","na","go"] },
-  { first: "to", seconds: ["ro","po","do","no","ca","ma"] },
-  { first: "lo", seconds: ["bo","co","do","ma"] },
-  { first: "pi", seconds: ["so","pa","la","co","no"] },
-  { first: "mo", seconds: ["no","to","ra"] },
-  { first: "ro", seconds: ["sa","ca","pa","to"] },
-  { first: "mi", seconds: ["sa","ra","na"] },
-  { first: "ti", seconds: ["po","ro","na","ra"] },
-  { first: "va", seconds: ["ca","so","le","go"] },
-  { first: "ri", seconds: ["sa","co","ma","to"] },
-  { first: "fi", seconds: ["la","no","jo"] },
-  { first: "ve", seconds: ["la","na","lo"] },
-  { first: "me", seconds: ["sa","ta","ro"] },
-  { first: "bo", seconds: ["la","ca","ta","te"] },
-  { first: "co", seconds: ["la","pa","ma","do"] },
-  { first: "fo", seconds: ["ca","sa","to"] },
-  { first: "go", seconds: ["ma","ta","zo"] },
-  { first: "ho", seconds: ["la","ra"] },
-  { first: "lu", seconds: ["na","pa"] },
-  { first: "du", seconds: ["ro","na","da"] },
-  { first: "nu", seconds: ["be","do","ca"] },
-  { first: "te", seconds: ["la","ma"] },
-  { first: "pe", seconds: ["lo","na","so","ra"] },
-  { first: "se", seconds: ["ca","da","ta"] },
-  { first: "na", seconds: ["da","ta","ve"] },
-  { first: "de", seconds: ["do","be"] },
-];
-
-const state = { groupIdx: 0, secondIdx: 0, masteredWords: new Set(), listening: false, celebrating: false };
-
-function loadProgress() {
-  try {
-    const d = JSON.parse(localStorage.getItem('silabas_v1') || 'null');
-    if (!d) return;
-    state.masteredWords = new Set(d.masteredWords || []);
-    state.groupIdx  = Math.max(0, Math.min(d.groupIdx  || 0, GROUPS.length - 1));
-    state.secondIdx = Math.max(0, Math.min(d.secondIdx || 0, GROUPS[state.groupIdx].seconds.length - 1));
-  } catch(_) {}
-}
-
-function saveProgress() {
-  try { localStorage.setItem('silabas_v1', JSON.stringify({ masteredWords: [...state.masteredWords], groupIdx: state.groupIdx, secondIdx: state.secondIdx })); } catch(_) {}
-}
-
-const grp  = () => GROUPS[state.groupIdx];
-const word = () => grp().first + grp().seconds[state.secondIdx];
-
-function normalize(s) { return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim(); }
-
-function render(side) {
-  const g = grp(), s2 = g.seconds[state.secondIdx];
-  document.getElementById('first-syl').textContent = g.first;
-  document.getElementById('second-syl').textContent = s2;
-  document.getElementById('wd1').textContent = g.first;
-  document.getElementById('wd2').textContent = s2;
-  document.getElementById('group-badge').textContent = (state.groupIdx+1)+'/'+GROUPS.length;
-  if (side==='first')  { anim('first-syl'); anim('wd1'); }
-  if (side==='second') { anim('second-syl'); anim('wd2'); }
-  renderDots();
-}
-
-function anim(id) { const el=document.getElementById(id); el.classList.remove('slide-in'); void el.offsetWidth; el.classList.add('slide-in'); }
-
-function renderDots() {
-  const g = grp(), c = document.getElementById('dots');
-  c.innerHTML = '';
-  g.seconds.forEach((s,i) => {
-    const d = document.createElement('div');
-    d.className = 'dot';
-    if (state.masteredWords.has(g.first+s)) d.classList.add('mastered');
-    if (i===state.secondIdx) d.classList.add('current');
-    c.appendChild(d);
-  });
-}
-
-function cycleFirst() {
-  if (state.celebrating) return;
-  state.groupIdx = (state.groupIdx+1) % GROUPS.length;
-  state.secondIdx = 0;
-  render('first'); saveProgress();
-}
-
-function cycleSecond() {
-  if (state.celebrating) return;
-  state.secondIdx = (state.secondIdx+1) % grp().seconds.length;
-  render('second'); saveProgress();
-}
-
-function speakWord() {
-  if (!window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(word());
-  u.lang='es-MX'; u.rate=0.82; u.pitch=1.05;
-  window.speechSynthesis.speak(u);
-}
-
-function celebrate() {
-  if (state.celebrating) return;
-  state.celebrating = true;
-  const ov = document.getElementById('celebration');
-  ov.innerHTML = '';
-  const wrap = document.createElement('div');
-  wrap.className = 'confetti-wrap';
-  const EM = ['⭐','🌟','✨','🎉','🎊','🌈','💛','💙','❤️'];
-  for (let i=0;i<28;i++) {
-    const cp=document.createElement('div'); cp.className='cp';
-    cp.textContent=EM[i%EM.length];
-    cp.style.cssText='left:'+Math.random()*100+'vw;top:-70px;font-size:'+(18+Math.random()*26)+'px;animation-duration:'+(0.7+Math.random()*0.9)+'s;animation-delay:'+Math.random()*0.35+'s;';
-    wrap.appendChild(cp);
-  }
-  ov.appendChild(wrap);
-  const bw=document.createElement('div'); bw.className='big-word';
-  const g=grp();
-  bw.innerHTML='<span class="bw1">'+g.first+'</span><span class="bw2">'+g.seconds[state.secondIdx]+'</span>';
-  ov.appendChild(bw);
-  setTimeout(() => { ov.innerHTML=''; state.celebrating=false; cycleSecond(); if (state.listening) tryListen(); }, 1600);
-}
-
-let recognition=null;
-
-function micUI(on) {
-  const b=document.getElementById('mic-btn');
-  b.textContent = on ? '🔴' : '🎤';
-  on ? b.classList.add('listening') : b.classList.remove('listening');
-}
-
-function tryListen() {
-  if (!recognition || !state.listening || state.celebrating) return;
-  try { recognition.start(); } catch(_) {}
-}
-
-function initSpeech() {
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if (!SR) { const b=document.getElementById('mic-btn'); b.style.opacity='0.25'; b.disabled=true; return; }
-  recognition=new SR();
-  recognition.lang='es-MX'; recognition.continuous=false; recognition.interimResults=false; recognition.maxAlternatives=6;
-  recognition.onstart=()=>{ micUI(true); };
-  recognition.onend=()=>{
-    // restart automatically if still in listening mode and not celebrating
-    if (state.listening && !state.celebrating) { setTimeout(tryListen, 120); }
-    else { micUI(false); }
-  };
-  recognition.onresult=(e)=>{
-    const t=normalize(word()); let ok=false;
-    for (let i=0;i<e.results[0].length;i++) { const h=normalize(e.results[0][i].transcript); if (h.includes(t)||t===h){ok=true;break;} }
-    if (ok) { state.masteredWords.add(word()); saveProgress(); celebrate(); }
-    else { shake(); }
-  };
-  recognition.onerror=(e)=>{
-    if (e.error==='not-allowed'||e.error==='service-not-allowed') {
-      state.listening=false; micUI(false);
-      toast('Permite el micrófono en ajustes');
-    }
-    // other errors (network, aborted) — onend will handle restart
-  };
-}
-
-function startListening() {
-  if (!recognition) return;
-  if (state.listening) { state.listening=false; recognition.stop(); return; }
-  state.listening=true;
-  tryListen();
-}
-
-function shake() { const el=document.getElementById('word-display'); el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); setTimeout(()=>el.classList.remove('shake'),400); }
-
-function toast(msg,ms=3000) { const el=document.getElementById('toast'); el.textContent=msg; el.style.display='block'; setTimeout(()=>{el.style.display='none';},ms); }
-
-document.getElementById('left-panel') .addEventListener('click', cycleFirst);
-document.getElementById('right-panel').addEventListener('click', cycleSecond);
-document.getElementById('mic-btn')   .addEventListener('click', e=>{e.stopPropagation();startListening();});
-document.getElementById('speak-btn') .addEventListener('click', e=>{e.stopPropagation();speakWord();});
-document.getElementById('skip-btn')  .addEventListener('click', e=>{e.stopPropagation();cycleSecond();});
-
-loadProgress(); render(null); initSpeech();
-</script>
+  </a>
 </body>
 </html>
