@@ -59,9 +59,8 @@
       display: flex; align-items: center; justify-content: center;
       gap: 14px; padding: 0 20px; box-shadow: 0 -3px 16px rgba(0,0,0,0.18);
     }
-    #word-display { font-size: clamp(34px, 7.5vw, 58px); font-weight: 900; letter-spacing: 0.03em; pointer-events: none; user-select: none; }
+    #word-display { font-size: clamp(48px, 10vw, 76px); font-weight: 900; letter-spacing: -0.01em; pointer-events: none; user-select: none; }
     #word-display .w1 { color: var(--word-blue); }
-    #word-display .dot-sep { color: #CBD5E1; font-weight: 300; margin: 0 1px; font-size: 0.7em; vertical-align: middle; }
     #word-display .w2 { color: var(--word-red); }
     .btn {
       background: none; border: none; cursor: pointer; font-size: 34px;
@@ -110,7 +109,7 @@
 <div id="bottom-bar">
   <button class="btn" id="speak-btn" aria-label="Escuchar">🔊</button>
   <div id="word-display">
-    <span class="w1" id="wd1">ca</span><span class="dot-sep">·</span><span class="w2" id="wd2">sa</span>
+    <span class="w1" id="wd1">ca</span><span class="w2" id="wd2">sa</span>
   </div>
   <button class="btn" id="mic-btn" aria-label="Pronunciar">🎤</button>
   <button class="btn" id="skip-btn" aria-label="Siguiente">➡️</button>
@@ -202,13 +201,13 @@ function cycleFirst() {
   if (state.celebrating) return;
   state.groupIdx = (state.groupIdx+1) % GROUPS.length;
   state.secondIdx = 0;
-  render('first'); saveProgress(); speakWord();
+  render('first'); saveProgress();
 }
 
 function cycleSecond() {
   if (state.celebrating) return;
   state.secondIdx = (state.secondIdx+1) % grp().seconds.length;
-  render('second'); saveProgress(); speakWord();
+  render('second'); saveProgress();
 }
 
 function speakWord() {
@@ -238,18 +237,33 @@ function celebrate() {
   const g=grp();
   bw.innerHTML='<span class="bw1">'+g.first+'</span><span class="bw2">'+g.seconds[state.secondIdx]+'</span>';
   ov.appendChild(bw);
-  setTimeout(() => { ov.innerHTML=''; state.celebrating=false; cycleSecond(); }, 1600);
+  setTimeout(() => { ov.innerHTML=''; state.celebrating=false; cycleSecond(); if (state.listening) tryListen(); }, 1600);
 }
 
 let recognition=null;
+
+function micUI(on) {
+  const b=document.getElementById('mic-btn');
+  b.textContent = on ? '🔴' : '🎤';
+  on ? b.classList.add('listening') : b.classList.remove('listening');
+}
+
+function tryListen() {
+  if (!recognition || !state.listening || state.celebrating) return;
+  try { recognition.start(); } catch(_) {}
+}
 
 function initSpeech() {
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if (!SR) { const b=document.getElementById('mic-btn'); b.style.opacity='0.25'; b.disabled=true; return; }
   recognition=new SR();
   recognition.lang='es-MX'; recognition.continuous=false; recognition.interimResults=false; recognition.maxAlternatives=6;
-  recognition.onstart=()=>{ state.listening=true; const b=document.getElementById('mic-btn'); b.textContent='🔴'; b.classList.add('listening'); };
-  recognition.onend=()=>{ state.listening=false; const b=document.getElementById('mic-btn'); b.textContent='🎤'; b.classList.remove('listening'); };
+  recognition.onstart=()=>{ micUI(true); };
+  recognition.onend=()=>{
+    // restart automatically if still in listening mode and not celebrating
+    if (state.listening && !state.celebrating) { setTimeout(tryListen, 120); }
+    else { micUI(false); }
+  };
   recognition.onresult=(e)=>{
     const t=normalize(word()); let ok=false;
     for (let i=0;i<e.results[0].length;i++) { const h=normalize(e.results[0][i].transcript); if (h.includes(t)||t===h){ok=true;break;} }
@@ -257,15 +271,19 @@ function initSpeech() {
     else { shake(); }
   };
   recognition.onerror=(e)=>{
-    state.listening=false; const b=document.getElementById('mic-btn'); b.textContent='🎤'; b.classList.remove('listening');
-    if (e.error==='not-allowed'||e.error==='service-not-allowed') toast('Permite el micrófono en ajustes');
+    if (e.error==='not-allowed'||e.error==='service-not-allowed') {
+      state.listening=false; micUI(false);
+      toast('Permite el micrófono en ajustes');
+    }
+    // other errors (network, aborted) — onend will handle restart
   };
 }
 
 function startListening() {
-  if (!recognition||state.celebrating) return;
-  if (state.listening) { recognition.stop(); return; }
-  try { recognition.start(); } catch(_) {}
+  if (!recognition) return;
+  if (state.listening) { state.listening=false; recognition.stop(); return; }
+  state.listening=true;
+  tryListen();
 }
 
 function shake() { const el=document.getElementById('word-display'); el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); setTimeout(()=>el.classList.remove('shake'),400); }
@@ -279,7 +297,6 @@ document.getElementById('speak-btn') .addEventListener('click', e=>{e.stopPropag
 document.getElementById('skip-btn')  .addEventListener('click', e=>{e.stopPropagation();cycleSecond();});
 
 loadProgress(); render(null); initSpeech();
-setTimeout(speakWord, 700);
 </script>
 </body>
 </html>
