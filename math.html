@@ -229,7 +229,7 @@ function celebrate() {
   setTimeout(() => {
     ov.innerHTML = ''; state.celebrating = false;
     next();
-    if (state.listening) tryListen();
+    // recognition stays active with continuous:true — no restart needed
   }, 1600);
 }
 
@@ -248,21 +248,36 @@ function tryListen() {
 
 function initSpeech() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) {
+  const ua = navigator.userAgent;
+  const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isChromeIOS = isIOS && /CriOS/.test(ua);
+  if (!SR || isChromeIOS) {
     const b = document.getElementById('mic-btn');
-    b.style.opacity = '0.25'; b.disabled = true; return;
+    b.style.opacity = '0.25'; b.disabled = true;
+    if (isChromeIOS) toast('Speech needs Safari — please reopen in Safari', 8000);
+    return;
   }
   recognition = new SR();
-  recognition.lang = 'es-MX'; recognition.continuous = false;
+  // continuous: true = one tap keeps listening across multiple answers (required for iOS Safari)
+  recognition.lang = 'es-MX'; recognition.continuous = true;
   recognition.interimResults = false; recognition.maxAlternatives = 6;
   recognition.onstart = () => micUI(true);
   recognition.onend = () => {
-    if (state.listening && !state.celebrating) setTimeout(tryListen, 120);
-    else micUI(false);
+    micUI(false);
+    if (state.listening && !state.celebrating) {
+      // Unexpected stop (iOS ~60s timeout, network hiccup) — let user know to tap again
+      state.listening = false;
+      toast('Tap 🎤 to keep listening');
+    } else {
+      state.listening = false;
+    }
   };
   recognition.onresult = e => {
-    for (let i = 0; i < e.results[0].length; i++) {
-      if (checkAnswer(e.results[0][i].transcript)) { celebrate(); return; }
+    if (state.celebrating) return;
+    const result = e.results[e.resultIndex];
+    if (!result.isFinal) return;
+    for (let i = 0; i < result.length; i++) {
+      if (checkAnswer(result[i].transcript)) { celebrate(); return; }
     }
     shake();
   };

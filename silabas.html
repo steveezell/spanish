@@ -239,7 +239,7 @@ function celebrate() {
   const g=grp();
   bw.innerHTML='<span class="bw1">'+g.first+'</span><span class="bw2">'+g.seconds[state.secondIdx]+'</span>';
   ov.appendChild(bw);
-  setTimeout(() => { ov.innerHTML=''; state.celebrating=false; cycleSecond(); if (state.listening) tryListen(); }, 1600);
+  setTimeout(() => { ov.innerHTML=''; state.celebrating=false; cycleSecond(); }, 1600);
 }
 
 let recognition=null;
@@ -257,18 +257,29 @@ function tryListen() {
 
 function initSpeech() {
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if (!SR) { const b=document.getElementById('mic-btn'); b.style.opacity='0.25'; b.disabled=true; return; }
+  const ua=navigator.userAgent;
+  const isIOS=/iPad|iPhone|iPod/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  const isChromeIOS=isIOS&&/CriOS/.test(ua);
+  if (!SR||isChromeIOS) {
+    const b=document.getElementById('mic-btn'); b.style.opacity='0.25'; b.disabled=true;
+    if (isChromeIOS) toast('El micrófono necesita Safari — abre la página en Safari',8000);
+    return;
+  }
   recognition=new SR();
-  recognition.lang='es-MX'; recognition.continuous=false; recognition.interimResults=false; recognition.maxAlternatives=6;
+  // continuous: true = one tap keeps listening across multiple words (required for iOS Safari)
+  recognition.lang='es-MX'; recognition.continuous=true; recognition.interimResults=false; recognition.maxAlternatives=6;
   recognition.onstart=()=>{ micUI(true); };
   recognition.onend=()=>{
-    // restart automatically if still in listening mode and not celebrating
-    if (state.listening && !state.celebrating) { setTimeout(tryListen, 120); }
-    else { micUI(false); }
+    micUI(false);
+    if (state.listening&&!state.celebrating) { state.listening=false; toast('Toca 🎤 para continuar'); }
+    else { state.listening=false; }
   };
   recognition.onresult=(e)=>{
+    if (state.celebrating) return;
+    const result=e.results[e.resultIndex];
+    if (!result.isFinal) return;
     const t=normalize(word()); let ok=false;
-    for (let i=0;i<e.results[0].length;i++) { const h=normalize(e.results[0][i].transcript); if (h.includes(t)||t===h){ok=true;break;} }
+    for (let i=0;i<result.length;i++) { const h=normalize(result[i].transcript); if (h.includes(t)||t===h){ok=true;break;} }
     if (ok) { state.masteredWords.add(word()); saveProgress(); celebrate(); }
     else { shake(); }
   };
@@ -277,7 +288,6 @@ function initSpeech() {
       state.listening=false; micUI(false);
       toast('Permite el micrófono en ajustes');
     }
-    // other errors (network, aborted) — onend will handle restart
   };
 }
 
