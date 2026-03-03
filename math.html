@@ -260,7 +260,7 @@ function initSpeech() {
   recognition = new SR();
   // continuous: true = one tap keeps listening across multiple answers (required for iOS Safari)
   recognition.lang = 'es-MX'; recognition.continuous = true;
-  recognition.interimResults = false; recognition.maxAlternatives = 6;
+  recognition.interimResults = true; recognition.maxAlternatives = 6;
   recognition.onstart = () => micUI(true);
   recognition.onend = () => {
     micUI(false);
@@ -275,11 +275,12 @@ function initSpeech() {
   recognition.onresult = e => {
     if (state.celebrating) return;
     const result = e.results[e.resultIndex];
-    if (!result.isFinal) return;
+    // Check interim results immediately — single number words are accurate well before silence
     for (let i = 0; i < result.length; i++) {
       if (checkAnswer(result[i].transcript)) { celebrate(); return; }
     }
-    shake();
+    // Only shake on final result to avoid false-negative feedback mid-word
+    if (result.isFinal) shake();
   };
   recognition.onerror = e => {
     if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
