@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0F766E">
+  <title>Spelling</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { height: 100%; }
+    body {
+      font-family: 'Nunito', -apple-system, 'Helvetica Neue', Arial, sans-serif;
+      min-height: 100%; background: linear-gradient(160deg, #2DD4BF, #0F766E);
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; padding: 72px 24px 40px;
+      touch-action: manipulation;
+    }
+    #top-bar {
+      position: fixed; top: 0; left: 0; right: 0; height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 16px; z-index: 100;
+    }
+    #word-count {
+      font-size: 15px; font-weight: 800; color: rgba(255,255,255,0.7);
+    }
+    .btn-icon {
+      background: none; border: none; cursor: pointer; font-size: 26px;
+      padding: 8px; border-radius: 50%; opacity: 0.65;
+      -webkit-tap-highlight-color: transparent; line-height: 1;
+      transition: transform 0.1s;
+    }
+    .btn-icon:active { transform: scale(0.88); }
+    .card {
+      background: rgba(255,255,255,0.13); border-radius: 24px;
+      padding: 32px 28px 28px; width: 100%; max-width: 460px;
+      display: flex; flex-direction: column; align-items: center; gap: 20px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    }
+    #speak-btn {
+      font-size: 72px; background: none; border: none; cursor: pointer;
+      line-height: 1; -webkit-tap-highlight-color: transparent;
+      transition: transform 0.12s;
+    }
+    #speak-btn:active { transform: scale(0.88); }
+    .hear-label {
+      font-size: 17px; font-weight: 800; color: rgba(255,255,255,0.75);
+      margin-top: -12px;
+    }
+    .hint {
+      font-size: clamp(22px, 5.5vw, 34px); font-weight: 900;
+      color: rgba(255,255,255,0.55); letter-spacing: 0.25em; font-family: monospace;
+      word-break: break-all; text-align: center;
+    }
+    #input-field {
+      width: 100%; padding: 14px 18px; border-radius: 16px;
+      border: 3px solid rgba(255,255,255,0.4); background: rgba(255,255,255,0.92);
+      font-family: 'Nunito', sans-serif; font-size: clamp(28px, 7vw, 44px);
+      font-weight: 900; text-align: center; color: #0F766E;
+      outline: none; -webkit-appearance: none;
+      transition: border-color 0.15s;
+    }
+    #input-field:focus { border-color: rgba(255,255,255,0.9); }
+    #input-field.wrong { animation: shake 0.38s ease-in-out; border-color: #EF4444; }
+    @keyframes shake { 0%,100%{transform:translateX(0);}20%{transform:translateX(-10px);}40%{transform:translateX(10px);}60%{transform:translateX(-8px);}80%{transform:translateX(5px);} }
+    #submit-btn {
+      width: 100%; padding: 15px; border-radius: 16px; border: none;
+      background: rgba(255,255,255,0.92); color: #0F766E;
+      font-family: 'Nunito', sans-serif; font-size: 22px; font-weight: 900;
+      cursor: pointer; -webkit-tap-highlight-color: transparent;
+      transition: transform 0.1s, opacity 0.1s;
+    }
+    #submit-btn:active { transform: scale(0.97); opacity: 0.85; }
+    #skip-btn-card {
+      font-size: 15px; font-weight: 800; color: rgba(255,255,255,0.5);
+      background: none; border: none; cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #celebration { position: fixed; inset: 0; pointer-events: none; z-index: 1000; display: flex; align-items: center; justify-content: center; }
+    .confetti-wrap { position: absolute; inset: 0; overflow: hidden; }
+    .cp { position: absolute; animation: cfall linear forwards; }
+    @keyframes cfall { from { transform: translateY(-80px) rotate(0deg); opacity: 1; } to { transform: translateY(110vh) rotate(600deg); opacity: 0; } }
+    .big-word-cel {
+      font-family: 'Nunito', sans-serif; font-size: clamp(48px, 12vw, 110px); font-weight: 900;
+      background: rgba(255,255,255,0.93); border-radius: 20px; padding: 12px 40px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.25); animation: popIn 0.35s cubic-bezier(0.34,1.56,0.64,1);
+      color: #0F766E;
+    }
+    @keyframes popIn { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  </style>
+</head>
+<body>
+<div id="top-bar">
+  <button class="btn-icon" id="home-btn" aria-label="Home">🏠</button>
+  <span id="word-count">1/113 · ✓ 0</span>
+</div>
+
+<div class="card">
+  <button id="speak-btn" aria-label="Hear word">🔊</button>
+  <div class="hear-label">Tap to hear the word</div>
+  <div class="hint" id="hint">_ _ _ _ _</div>
+  <input id="input-field" type="text"
+    autocomplete="off" autocorrect="off"
+    autocapitalize="none" spellcheck="false"
+    inputmode="text" placeholder="type here…" />
+  <button id="submit-btn">Check ✓</button>
+  <button id="skip-btn-card">Skip ➡️</button>
+</div>
+
+<div id="celebration"></div>
+<script>
+const WORDS = [
+  'after','again','any','ask','could','every','fly','from','give','had',
+  'has','her','him','his','how','just','know','let','live','may',
+  'old','once','open','over','put','round','some','stop','take','thank',
+  'them','then','think','walk','were','when',
+  'always','around','because','before','best','both','buy','call','cold',
+  'does','fast','first','five','found','gave','goes','green','made','many',
+  'pull','read','right','sing','sit','sleep','tell','these','those',
+  'very','wash','which','why','wish','work','would','write','your',
+  'funny','happy','jump','light','long','never','short','small','together',
+  'water','young','above','begin','black','bring','clean','color','draw',
+  'drink','eight','fall','full','hold','hot','hurt','keep','kind','laugh',
+  'much','myself','only','pick','please','seven','show','start','today',
+  'under','until','warm',
+];
+for (let i = WORDS.length - 1; i > 0; i--) {
+  const j = Math.floor(Math.random() * (i + 1));
+  [WORDS[i], WORDS[j]] = [WORDS[j], WORDS[i]];
+}
+
+const state = { idx: 0, mastered: new Set(), celebrating: false };
+
+function loadProgress() {
+  try {
+    const d = JSON.parse(localStorage.getItem('spelling_v1') || 'null');
+    if (d) state.mastered = new Set(d.mastered || []);
+  } catch(_) {}
+}
+function saveProgress() {
+  try { localStorage.setItem('spelling_v1', JSON.stringify({ mastered: [...state.mastered] })); } catch(_) {}
+}
+
+const cur = () => WORDS[state.idx];
+
+function render(speakIt) {
+  const w = cur();
+  document.getElementById('hint').textContent = w.split('').map(() => '_').join(' ');
+  document.getElementById('input-field').value = '';
+  document.getElementById('word-count').textContent =
+    (state.idx + 1) + '/' + WORDS.length + ' · ✓ ' + state.mastered.size;
+  if (speakIt) speakWord();
+}
+
+function speakWord() {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(cur());
+  u.lang = 'en-US'; u.rate = 0.78; u.pitch = 1.05;
+  window.speechSynthesis.speak(u);
+}
+
+function next(speakIt = true) {
+  state.idx = (state.idx + 1) % WORDS.length;
+  render(speakIt);
+}
+
+function checkSpelling() {
+  if (state.celebrating) return;
+  const input = document.getElementById('input-field').value.trim().toLowerCase();
+  if (!input) return;
+  if (input === cur().toLowerCase()) {
+    celebrate();
+  } else {
+    shakeInput();
+  }
+}
+
+function shakeInput() {
+  const el = document.getElementById('input-field');
+  el.classList.remove('wrong'); void el.offsetWidth; el.classList.add('wrong');
+  setTimeout(() => { el.classList.remove('wrong'); el.value = ''; el.focus(); }, 400);
+}
+
+function celebrate() {
+  state.celebrating = true;
+  state.mastered.add(cur());
+  saveProgress();
+  const ov = document.getElementById('celebration');
+  ov.innerHTML = '';
+  const wrap = document.createElement('div'); wrap.className = 'confetti-wrap';
+  const EM = ['⭐','🌟','✨','🎉','🎊','🌈','💚','💛','❤️'];
+  for (let i = 0; i < 28; i++) {
+    const cp = document.createElement('div'); cp.className = 'cp';
+    cp.textContent = EM[i % EM.length];
+    cp.style.cssText = 'left:' + Math.random()*100 + 'vw;top:-70px;font-size:' +
+      (18 + Math.random()*26) + 'px;animation-duration:' + (0.7 + Math.random()*0.9) +
+      's;animation-delay:' + Math.random()*0.35 + 's;';
+    wrap.appendChild(cp);
+  }
+  ov.appendChild(wrap);
+  const bw = document.createElement('div'); bw.className = 'big-word-cel';
+  bw.textContent = cur();
+  ov.appendChild(bw);
+  setTimeout(() => { ov.innerHTML = ''; state.celebrating = false; next(true); }, 1350);
+}
+
+document.getElementById('speak-btn')   .addEventListener('click', speakWord);
+document.getElementById('submit-btn')  .addEventListener('click', checkSpelling);
+document.getElementById('skip-btn-card').addEventListener('click', () => { if (!state.celebrating) next(false); });
+document.getElementById('home-btn')    .addEventListener('click', () => window.location.href = 'scout.html');
+document.getElementById('input-field') .addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); checkSpelling(); } });
+
+loadProgress(); render(false);
+</script>
+</body>
+</html>

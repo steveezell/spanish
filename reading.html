@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#7C3AED">
+  <title>Reading</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; height: 100%; overflow: hidden; touch-action: manipulation; }
+    body {
+      font-family: 'Nunito', -apple-system, 'Helvetica Neue', Arial, sans-serif;
+      display: flex; flex-direction: column; height: 100dvh; background: #111;
+    }
+    #card {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      background: linear-gradient(160deg, #A78BFA, #6D28D9);
+      position: relative; overflow: hidden;
+      cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent;
+    }
+    #card::after {
+      content: ''; position: absolute; inset: 0; background: transparent;
+      transition: background 0.12s; pointer-events: none;
+    }
+    #card:active::after { background: rgba(0,0,0,0.12); }
+    #word {
+      font-size: clamp(56px, 14vw, 150px); font-weight: 900; color: #fff;
+      text-shadow: 0 4px 20px rgba(0,0,0,0.2); letter-spacing: -0.02em;
+      line-height: 1; text-align: center; padding: 0 24px;
+    }
+    .slide-in { animation: slideUp 0.28s cubic-bezier(0.34,1.56,0.64,1); }
+    @keyframes slideUp { from { transform: translateY(28px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    #card-badge {
+      position: absolute; top: 14px; right: 14px; font-size: 16px;
+      font-weight: 800; color: rgba(255,255,255,0.55); pointer-events: none;
+    }
+    #bottom-bar {
+      background: #fff; height: 100px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      gap: 10px; padding: 0 16px; box-shadow: 0 -3px 16px rgba(0,0,0,0.18);
+    }
+    #word-display {
+      font-size: clamp(30px, 7vw, 56px); font-weight: 900; letter-spacing: -0.01em;
+      color: #6D28D9; pointer-events: none; user-select: none; flex: 1; text-align: center;
+    }
+    .btn {
+      background: none; border: none; cursor: pointer; font-size: 34px;
+      padding: 8px; border-radius: 50%; transition: transform 0.1s, background 0.1s;
+      -webkit-tap-highlight-color: transparent; line-height: 1; flex-shrink: 0;
+    }
+    .btn:active { transform: scale(0.88); background: rgba(0,0,0,0.06); }
+    #mic-btn.listening { animation: pulse 0.75s ease-in-out infinite; }
+    @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.28); } }
+    #skip-btn { font-size: 26px; opacity: 0.5; }
+    #home-btn  { font-size: 26px; opacity: 0.5; }
+    #celebration { position: fixed; inset: 0; pointer-events: none; z-index: 1000; display: flex; align-items: center; justify-content: center; }
+    .confetti-wrap { position: absolute; inset: 0; overflow: hidden; }
+    .cp { position: absolute; animation: cfall linear forwards; }
+    @keyframes cfall { from { transform: translateY(-80px) rotate(0deg); opacity: 1; } to { transform: translateY(110vh) rotate(600deg); opacity: 0; } }
+    .big-word-cel {
+      font-family: 'Nunito', sans-serif; font-size: clamp(48px, 12vw, 110px); font-weight: 900;
+      background: rgba(255,255,255,0.93); border-radius: 20px; padding: 12px 40px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.25); animation: popIn 0.35s cubic-bezier(0.34,1.56,0.64,1);
+      color: #6D28D9;
+    }
+    @keyframes popIn { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .shake { animation: shake 0.38s ease-in-out; }
+    @keyframes shake { 0%,100%{transform:translateX(0);}20%{transform:translateX(-10px);}40%{transform:translateX(10px);}60%{transform:translateX(-8px);}80%{transform:translateX(5px);} }
+    #toast {
+      position: fixed; bottom: 116px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.72); color: #fff; padding: 8px 18px;
+      border-radius: 20px; font-size: 14px; font-weight: 800;
+      white-space: nowrap; display: none; z-index: 500;
+    }
+  </style>
+</head>
+<body>
+<div id="card">
+  <div id="word" class="slide-in">after</div>
+  <span id="card-badge">1/113</span>
+</div>
+<div id="bottom-bar">
+  <button class="btn" id="home-btn"  aria-label="Home">🏠</button>
+  <button class="btn" id="speak-btn" aria-label="Hear word">🔊</button>
+  <div id="word-display">after</div>
+  <button class="btn" id="mic-btn"   aria-label="Say word">🎤</button>
+  <button class="btn" id="skip-btn"  aria-label="Next">➡️</button>
+</div>
+<div id="celebration"></div>
+<div id="toast"></div>
+<script>
+const WORDS = [
+  'after','again','any','ask','could','every','fly','from','give','had',
+  'has','her','him','his','how','just','know','let','live','may',
+  'old','once','open','over','put','round','some','stop','take','thank',
+  'them','then','think','walk','were','when',
+  'always','around','because','before','best','both','buy','call','cold',
+  'does','fast','first','five','found','gave','goes','green','made','many',
+  'pull','read','right','sing','sit','sleep','tell','these','those',
+  'very','wash','which','why','wish','work','would','write','your',
+  'funny','happy','jump','light','long','never','short','small','together',
+  'water','young','above','begin','black','bring','clean','color','draw',
+  'drink','eight','fall','full','hold','hot','hurt','keep','kind','laugh',
+  'much','myself','only','pick','please','seven','show','start','today',
+  'under','until','warm',
+];
+for (let i = WORDS.length - 1; i > 0; i--) {
+  const j = Math.floor(Math.random() * (i + 1));
+  [WORDS[i], WORDS[j]] = [WORDS[j], WORDS[i]];
+}
+
+const state = { idx: 0, mastered: new Set(), listening: false, celebrating: false };
+
+function loadProgress() {
+  try {
+    const d = JSON.parse(localStorage.getItem('reading_v1') || 'null');
+    if (d) state.mastered = new Set(d.mastered || []);
+  } catch(_) {}
+}
+function saveProgress() {
+  try { localStorage.setItem('reading_v1', JSON.stringify({ mastered: [...state.mastered] })); } catch(_) {}
+}
+
+const cur = () => WORDS[state.idx];
+
+function render(animate) {
+  const w = cur();
+  document.getElementById('word').textContent         = w;
+  document.getElementById('word-display').textContent = w;
+  document.getElementById('card-badge').textContent   =
+    (state.idx + 1) + '/' + WORDS.length +
+    (state.mastered.size ? '  ·  ✓ ' + state.mastered.size : '');
+  if (animate) anim('word');
+}
+
+function anim(id) {
+  const el = document.getElementById(id);
+  el.classList.remove('slide-in'); void el.offsetWidth; el.classList.add('slide-in');
+}
+
+function next() {
+  state.idx = (state.idx + 1) % WORDS.length;
+  render(true);
+}
+
+function speakWord() {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(cur());
+  u.lang = 'en-US'; u.rate = 0.82; u.pitch = 1.05;
+  window.speechSynthesis.speak(u);
+}
+
+function normalize(s) { return s.toLowerCase().trim().replace(/[^a-z]/g, ''); }
+
+function checkAnswer(transcript) {
+  const t = normalize(transcript);
+  const w = normalize(cur());
+  return t === w || t.includes(w);
+}
+
+function celebrate() {
+  if (state.celebrating) return;
+  state.celebrating = true;
+  state.mastered.add(cur());
+  saveProgress();
+  const ov = document.getElementById('celebration');
+  ov.innerHTML = '';
+  const wrap = document.createElement('div'); wrap.className = 'confetti-wrap';
+  const EM = ['⭐','🌟','✨','🎉','🎊','🌈','💜','💛','❤️'];
+  for (let i = 0; i < 28; i++) {
+    const cp = document.createElement('div'); cp.className = 'cp';
+    cp.textContent = EM[i % EM.length];
+    cp.style.cssText = 'left:' + Math.random()*100 + 'vw;top:-70px;font-size:' +
+      (18 + Math.random()*26) + 'px;animation-duration:' + (0.7 + Math.random()*0.9) +
+      's;animation-delay:' + Math.random()*0.35 + 's;';
+    wrap.appendChild(cp);
+  }
+  ov.appendChild(wrap);
+  const bw = document.createElement('div'); bw.className = 'big-word-cel';
+  bw.textContent = cur();
+  ov.appendChild(bw);
+  setTimeout(() => { ov.innerHTML = ''; state.celebrating = false; next(); }, 1350);
+}
+
+let recognition = null;
+
+function micUI(on) {
+  const b = document.getElementById('mic-btn');
+  b.textContent = on ? '🔴' : '🎤';
+  on ? b.classList.add('listening') : b.classList.remove('listening');
+}
+
+function tryListen() {
+  if (!recognition || !state.listening || state.celebrating) return;
+  try { recognition.start(); } catch(_) {}
+}
+
+function initSpeech() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const ua = navigator.userAgent;
+  const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isChromeIOS = isIOS && /CriOS/.test(ua);
+  if (!SR || isChromeIOS) {
+    const b = document.getElementById('mic-btn');
+    b.style.opacity = '0.25'; b.disabled = true;
+    if (isChromeIOS) toast('Speech needs Safari — please reopen in Safari', 8000);
+    return;
+  }
+  recognition = new SR();
+  recognition.lang = 'en-US'; recognition.continuous = true;
+  recognition.interimResults = false; recognition.maxAlternatives = 6;
+  recognition.onstart = () => micUI(true);
+  recognition.onend = () => {
+    micUI(false);
+    if (state.listening && !state.celebrating) { state.listening = false; toast('Tap 🎤 to keep listening'); }
+    else { state.listening = false; }
+  };
+  recognition.onresult = e => {
+    if (state.celebrating) return;
+    const result = e.results[e.resultIndex];
+    if (!result.isFinal) return;
+    for (let i = 0; i < result.length; i++) {
+      if (checkAnswer(result[i].transcript)) { celebrate(); return; }
+    }
+    shake();
+  };
+  recognition.onerror = e => {
+    if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+      state.listening = false; micUI(false);
+      toast('Microphone permission needed');
+    }
+  };
+}
+
+function startListening() {
+  if (!recognition) return;
+  if (state.listening) { state.listening = false; recognition.stop(); return; }
+  state.listening = true;
+  tryListen();
+}
+
+function shake() {
+  const el = document.getElementById('word');
+  el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake');
+  setTimeout(() => el.classList.remove('shake'), 400);
+}
+
+function toast(msg, ms = 3000) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', ms);
+}
+
+document.getElementById('card')     .addEventListener('click', () => { if (!state.celebrating) next(); });
+document.getElementById('speak-btn').addEventListener('click', e => { e.stopPropagation(); speakWord(); });
+document.getElementById('mic-btn') .addEventListener('click', e => { e.stopPropagation(); startListening(); });
+document.getElementById('skip-btn').addEventListener('click', e => { e.stopPropagation(); next(); });
+document.getElementById('home-btn').addEventListener('click', e => { e.stopPropagation(); window.location.href = 'scout.html'; });
+
+loadProgress(); render(false); initSpeech();
+</script>
+</body>
+</html>

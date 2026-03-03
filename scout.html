@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#111">
+  <title>Scout's Games</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; height: 100%; overflow: hidden; touch-action: manipulation; }
+    body {
+      font-family: 'Nunito', -apple-system, 'Helvetica Neue', Arial, sans-serif;
+      display: flex; height: 100dvh;
+    }
+    .panel {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 12px;
+      cursor: pointer; position: relative; overflow: hidden;
+      text-decoration: none; user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .panel::after {
+      content: ''; position: absolute; inset: 0; background: transparent;
+      transition: background 0.12s; pointer-events: none;
+    }
+    .panel:active::after { background: rgba(0,0,0,0.14); }
+    #math     { background: linear-gradient(160deg, #FB923C, #EA580C); border-right: 3px solid rgba(255,255,255,0.2); }
+    #reading  { background: linear-gradient(160deg, #A78BFA, #7C3AED); border-right: 3px solid rgba(255,255,255,0.2); }
+    #spelling { background: linear-gradient(160deg, #2DD4BF, #0F766E); }
+    .game-icon { font-size: clamp(36px, 7vw, 68px); line-height: 1; }
+    .game-name {
+      font-size: clamp(28px, 7vw, 68px); font-weight: 900; color: #fff;
+      text-shadow: 0 4px 16px rgba(0,0,0,0.2); letter-spacing: -0.02em; line-height: 1;
+    }
+    .game-sub {
+      font-size: clamp(12px, 2.2vw, 20px); font-weight: 800;
+      color: rgba(255,255,255,0.6); letter-spacing: 0.05em; text-transform: uppercase;
+    }
+    .tap-hint {
+      position: absolute; bottom: 20px; font-size: 18px; opacity: 0.4;
+      animation: bounce 2s ease-in-out infinite;
+    }
+    @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
+    #home-btn {
+      position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.35); border: none; color: rgba(255,255,255,0.85);
+      border-radius: 20px; padding: 8px 20px; font-size: 16px; font-weight: 800;
+      cursor: pointer; font-family: 'Nunito', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+  </style>
+</head>
+<body>
+  <a id="math" class="panel" href="math.html">
+    <span class="game-icon">➕</span>
+    <span class="game-name">Math</span>
+    <span class="game-sub">Add &amp; Subtract</span>
+    <span class="tap-hint">▼</span>
+  </a>
+  <a id="reading" class="panel" href="reading.html">
+    <span class="game-icon">📖</span>
+    <span class="game-name">Reading</span>
+    <span class="game-sub">Flash Cards</span>
+    <span class="tap-hint">▼</span>
+  </a>
+  <a id="spelling" class="panel" href="spelling.html">
+    <span class="game-icon">✏️</span>
+    <span class="game-name">Spelling</span>
+    <span class="game-sub">Type it out</span>
+    <span class="tap-hint">▼</span>
+  </a>
+  <button id="home-btn" onclick="window.location.href='index.html'">🏠 Home</button>
+</body>
+</html>
