@@ -187,7 +187,7 @@ function celebrate() {
   setTimeout(() => { ov.innerHTML = ''; state.celebrating = false; next(); }, 1350);
 }
 
-let recognition = null;
+let recognition = null, celebrateTimer = null;
 
 function micUI(on) {
   const b = document.getElementById('mic-btn');
@@ -213,7 +213,7 @@ function initSpeech() {
   }
   recognition = new SR();
   recognition.lang = 'en-US'; recognition.continuous = true;
-  recognition.interimResults = false; recognition.maxAlternatives = 6;
+  recognition.interimResults = true; recognition.maxAlternatives = 6;
   recognition.onstart = () => micUI(true);
   recognition.onend = () => {
     micUI(false);
@@ -223,11 +223,17 @@ function initSpeech() {
   recognition.onresult = e => {
     if (state.celebrating) return;
     const result = e.results[e.resultIndex];
-    if (!result.isFinal) return;
+    let matched = false;
     for (let i = 0; i < result.length; i++) {
-      if (checkAnswer(result[i].transcript)) { celebrate(); return; }
+      if (checkAnswer(result[i].transcript)) { matched = true; break; }
     }
-    shake();
+    if (matched) {
+      // 200ms debounce: faster than silence detection, safer than immediate
+      if (!celebrateTimer) celebrateTimer = setTimeout(() => { celebrateTimer = null; celebrate(); }, 200);
+    } else {
+      if (celebrateTimer) { clearTimeout(celebrateTimer); celebrateTimer = null; }
+      if (result.isFinal) shake();
+    }
   };
   recognition.onerror = e => {
     if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
