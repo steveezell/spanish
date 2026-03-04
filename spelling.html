@@ -265,7 +265,8 @@ function celebrate() {
 document.getElementById('speak-btn')   .addEventListener('click', speakWord);
 document.getElementById('submit-btn')  .addEventListener('click', checkSpelling);
 document.getElementById('skip-btn-card').addEventListener('click', () => { if (!state.celebrating) next(false); });
-document.getElementById('home-btn')    .addEventListener('click', () => window.location.href = 'scout.html');
+const fromSilabas = new URLSearchParams(window.location.search).get('from') === 'silabas';
+document.getElementById('home-btn').addEventListener('click', () => window.location.href = fromSilabas ? 'silabas.html' : 'scout.html');
 document.getElementById('input-field') .addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); checkSpelling(); } });
 
 // ── Snake ───────────────────────────────────────────────────────────────────
@@ -358,7 +359,7 @@ function roundRect(ctx, x, y, w, h, r) {
 function snakeDie() {
   clearInterval(snake.timer);
   snake.active = false;
-  document.getElementById('snake-msg').textContent = '💀 Game over! Back to spelling…';
+  document.getElementById('snake-msg').textContent = fromSilabas ? '💀 Game over! Back to reading…' : '💀 Game over! Back to spelling…';
   const { ctx } = snake;
   snake.body.forEach(s => {
     ctx.fillStyle = '#EF4444';
@@ -372,6 +373,7 @@ function endSnake() {
   document.getElementById('snake-overlay').classList.remove('active');
   document.getElementById('dpad').classList.remove('active');
   snake.active = false;
+  if (fromSilabas) { window.location.href = 'silabas.html'; return; }
   next(true);
 }
 
@@ -393,6 +395,7 @@ document.addEventListener('keydown', e => {
 });
 
 loadProgress(); render(false);
+if (fromSilabas) launchSnake();
 </script>
 </body>
 </html>

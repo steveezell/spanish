@@ -152,7 +152,7 @@ const GROUPS = [
   { first: "de", seconds: ["do","be"] },
 ];
 
-const state = { groupIdx: 0, secondIdx: 0, masteredWords: new Set(), listening: false, celebrating: false };
+const state = { groupIdx: 0, secondIdx: 0, masteredWords: new Set(), listening: false, celebrating: false, correctCount: 0 };
 
 function loadProgress() {
   try {
@@ -161,11 +161,12 @@ function loadProgress() {
     state.masteredWords = new Set(d.masteredWords || []);
     state.groupIdx  = Math.max(0, Math.min(d.groupIdx  || 0, GROUPS.length - 1));
     state.secondIdx = Math.max(0, Math.min(d.secondIdx || 0, GROUPS[state.groupIdx].seconds.length - 1));
+    state.correctCount = d.correctCount || 0;
   } catch(_) {}
 }
 
 function saveProgress() {
-  try { localStorage.setItem('silabas_v1', JSON.stringify({ masteredWords: [...state.masteredWords], groupIdx: state.groupIdx, secondIdx: state.secondIdx })); } catch(_) {}
+  try { localStorage.setItem('silabas_v1', JSON.stringify({ masteredWords: [...state.masteredWords], groupIdx: state.groupIdx, secondIdx: state.secondIdx, correctCount: state.correctCount })); } catch(_) {}
 }
 
 const grp  = () => GROUPS[state.groupIdx];
@@ -220,7 +221,7 @@ function speakWord() {
   window.speechSynthesis.speak(u);
 }
 
-function celebrate() {
+function celebrate(afterFn) {
   if (state.celebrating) return;
   state.celebrating = true;
   const ov = document.getElementById('celebration');
@@ -239,7 +240,7 @@ function celebrate() {
   const g=grp();
   bw.innerHTML='<span class="bw1">'+g.first+'</span><span class="bw2">'+g.seconds[state.secondIdx]+'</span>';
   ov.appendChild(bw);
-  setTimeout(() => { ov.innerHTML=''; state.celebrating=false; cycleSecond(); }, 1350);
+  setTimeout(() => { ov.innerHTML=''; state.celebrating=false; if (afterFn) afterFn(); else cycleSecond(); }, 1350);
 }
 
 let recognition=null, celebrateTimer=null;
@@ -281,7 +282,15 @@ function initSpeech() {
     for (let i=0;i<result.length;i++) { const h=normalize(result[i].transcript); if (h.includes(t)||t===h){ok=true;break;} }
     if (ok) {
       // 200ms debounce: faster than silence detection, safer than immediate
-      if (!celebrateTimer) celebrateTimer=setTimeout(()=>{ celebrateTimer=null; state.masteredWords.add(word()); saveProgress(); celebrate(); }, 200);
+      if (!celebrateTimer) celebrateTimer=setTimeout(()=>{
+        celebrateTimer=null;
+        state.masteredWords.add(word());
+        state.correctCount++;
+        const goSnake = state.correctCount >= 5;
+        if (goSnake) state.correctCount = 0;
+        saveProgress();
+        celebrate(goSnake ? ()=>{ window.location.href='spelling.html?from=silabas'; } : null);
+      }, 200);
     } else {
       if (celebrateTimer) { clearTimeout(celebrateTimer); celebrateTimer=null; }
       if (result.isFinal) { shake(); }
