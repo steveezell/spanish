@@ -24,7 +24,7 @@
     .problem {
       display: flex; align-items: center; justify-content: center;
       gap: clamp(6px, 2vw, 20px);
-      font-size: clamp(80px, 22vw, 200px); font-weight: 900; line-height: 1;
+      font-size: clamp(72px, 20vw, 180px); font-weight: 900; line-height: 1;
     }
     .num { color: #fff; text-shadow: 0 4px 20px rgba(0,0,0,0.2); }
     .op  { color: #FDE68A; text-shadow: 0 4px 20px rgba(0,0,0,0.25); }
@@ -35,30 +35,54 @@
       position: absolute; top: 14px; right: 14px; font-size: 16px;
       font-weight: 800; color: rgba(255,255,255,0.55); pointer-events: none;
     }
-    #bottom-bar {
-      background: #fff; height: 110px; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-      gap: 8px; padding: 0 12px; box-shadow: 0 -3px 16px rgba(0,0,0,0.18);
-    }
-    #answer-input {
-      flex: 1; min-width: 0;
+    /* Answer display strip */
+    #answer-display {
       font-family: 'Nunito', sans-serif;
-      font-size: clamp(36px, 9vw, 62px); font-weight: 900;
-      color: #EA580C; text-align: center;
-      border: none; border-bottom: 3px solid #EA580C;
-      outline: none; background: transparent; padding: 4px 8px;
+      font-size: clamp(48px, 13vw, 100px); font-weight: 900;
+      color: #fff; letter-spacing: 0.05em;
+      min-height: 0.9em; text-align: center;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.25);
+      transition: color 0.1s;
     }
-    #answer-input::placeholder { color: rgba(234,88,12,0.28); }
-    #answer-input.wrong { animation: shake 0.38s ease-in-out; }
-    .btn {
-      background: none; border: none; cursor: pointer; font-size: 34px;
-      padding: 8px; border-radius: 50%; transition: transform 0.1s, background 0.1s;
-      -webkit-tap-highlight-color: transparent; line-height: 1; flex-shrink: 0;
+    #answer-display.has-value { color: #FDE68A; }
+    #answer-display.wrong { animation: shake 0.38s ease-in-out; color: #FCA5A5; }
+    @keyframes shake { 0%,100%{transform:translateX(0);}20%{transform:translateX(-10px);}40%{transform:translateX(10px);}60%{transform:translateX(-8px);}80%{transform:translateX(5px);} }
+
+    /* Number pad */
+    #numpad-area {
+      background: #1a1a1a; flex-shrink: 0;
+      padding: 10px 12px 12px; box-shadow: 0 -3px 16px rgba(0,0,0,0.4);
     }
-    .btn:active { transform: scale(0.88); background: rgba(0,0,0,0.06); }
-    #check-btn { color: #EA580C; font-size: 30px; font-weight: 900; }
-    #skip-btn { font-size: 26px; opacity: 0.5; }
-    #home-btn  { font-size: 26px; opacity: 0.5; }
+    #top-row {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 8px; padding: 0 2px;
+    }
+    .top-btn {
+      background: none; border: none; cursor: pointer;
+      font-size: 24px; padding: 6px 10px; border-radius: 10px;
+      -webkit-tap-highlight-color: transparent; line-height: 1;
+      transition: transform 0.1s, background 0.1s; color: rgba(255,255,255,0.7);
+    }
+    .top-btn:active { transform: scale(0.88); background: rgba(255,255,255,0.1); }
+    #numpad-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+    }
+    .nk {
+      background: #2e2e2e; border: none; border-radius: 14px;
+      color: #fff; font-family: 'Nunito', sans-serif;
+      font-size: clamp(22px, 5.5vw, 36px); font-weight: 900;
+      padding: 14px 4px; cursor: pointer; line-height: 1;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 0.1s, background 0.1s;
+      box-shadow: 0 3px 0 #111;
+    }
+    .nk:active { transform: translateY(2px); background: #EA580C; box-shadow: none; }
+    .nk.action { background: #3a2010; color: #FB923C; }
+    .nk.action:active { background: #EA580C; color: #fff; }
+    .nk.check { background: #EA580C; color: #fff; font-size: clamp(18px, 4vw, 28px); }
+    .nk.check:active { background: #c2410c; }
+    .nk.del { font-size: clamp(18px, 4vw, 26px); }
+
     #celebration { position: fixed; inset: 0; pointer-events: none; z-index: 1000; display: flex; align-items: center; justify-content: center; }
     .confetti-wrap { position: absolute; inset: 0; overflow: hidden; }
     .cp { position: absolute; animation: cfall linear forwards; }
@@ -70,7 +94,39 @@
       color: #EA580C;
     }
     @keyframes popIn { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-    @keyframes shake { 0%,100%{transform:translateX(0);}20%{transform:translateX(-10px);}40%{transform:translateX(10px);}60%{transform:translateX(-8px);}80%{transform:translateX(5px);} }
+
+    /* Snake overlay */
+    #snake-overlay {
+      display: none; position: fixed; inset: 0; z-index: 500;
+      background: #000; flex-direction: column; align-items: center; justify-content: center;
+    }
+    #snake-overlay.active { display: flex; }
+    #snake-canvas { border: 3px solid #EA580C; border-radius: 6px; display: block; touch-action: none; }
+    #snake-msg {
+      color: #EA580C; font-family: 'Nunito', sans-serif; font-size: 26px; font-weight: 900;
+      margin-bottom: 16px; text-align: center;
+    }
+    /* D-pad */
+    #dpad {
+      position: fixed; bottom: 24px; left: 24px;
+      display: none; user-select: none;
+    }
+    #dpad.active { display: grid; }
+    #dpad {
+      grid-template-columns: 52px 52px 52px;
+      grid-template-rows: 52px 52px 52px;
+      gap: 4px;
+    }
+    .dp {
+      background: #2e2e2e; border: none; border-radius: 10px;
+      color: #fff; font-size: 22px; cursor: pointer; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.1s;
+      box-shadow: 0 3px 0 #111;
+    }
+    .dp:active, .dp.pressed { background: #EA580C; }
+    .dp.blank { background: transparent; box-shadow: none; pointer-events: none; }
   </style>
 </head>
 <body>
@@ -81,26 +137,64 @@
     <span class="num" id="num-b">5</span>
     <span class="eq">=&nbsp;?</span>
   </div>
+  <div id="answer-display">?</div>
   <span id="card-badge">1/176</span>
 </div>
-<div id="bottom-bar">
-  <button class="btn" id="home-btn"  aria-label="Home">🏠</button>
-  <button class="btn" id="speak-btn" aria-label="Hear problem">🔊</button>
-  <input id="answer-input" type="text" inputmode="decimal"
-    placeholder="?" autocomplete="off" autocorrect="off"
-    autocapitalize="none" spellcheck="false" />
-  <button class="btn" id="check-btn" aria-label="Check">✓</button>
-  <button class="btn" id="skip-btn"  aria-label="Next">➡️</button>
+
+<div id="numpad-area">
+  <div id="top-row">
+    <button class="top-btn" id="home-btn"  aria-label="Home">🏠</button>
+    <button class="top-btn" id="speak-btn" aria-label="Hear problem">🔊</button>
+    <button class="top-btn" id="skip-btn"  aria-label="Next">➡️</button>
+  </div>
+  <div id="numpad-grid">
+    <!-- Row 1 -->
+    <button class="nk" data-v="7">7</button>
+    <button class="nk" data-v="8">8</button>
+    <button class="nk" data-v="9">9</button>
+    <button class="nk del" id="del-btn">⌫</button>
+    <!-- Row 2 -->
+    <button class="nk" data-v="4">4</button>
+    <button class="nk" data-v="5">5</button>
+    <button class="nk" data-v="6">6</button>
+    <button class="nk check" id="check-btn" style="grid-row: span 2">✓</button>
+    <!-- Row 3 -->
+    <button class="nk" data-v="1">1</button>
+    <button class="nk" data-v="2">2</button>
+    <button class="nk" data-v="3">3</button>
+    <!-- Row 4 -->
+    <button class="nk action" data-v="0" style="grid-column: span 3">0</button>
+  </div>
 </div>
+
 <div id="celebration"></div>
+
+<!-- Snake overlay -->
+<div id="snake-overlay">
+  <div id="snake-msg">🐍 5 correct! Play Snake!</div>
+  <canvas id="snake-canvas"></canvas>
+</div>
+<div id="dpad">
+  <div class="dp blank"></div>
+  <button class="dp" id="dp-up">▲</button>
+  <div class="dp blank"></div>
+  <button class="dp" id="dp-left">◀</button>
+  <div class="dp blank"></div>
+  <button class="dp" id="dp-right">▶</button>
+  <div class="dp blank"></div>
+  <button class="dp" id="dp-down">▼</button>
+  <div class="dp blank"></div>
+</div>
+
 <script>
+// ── Problem generation (5–20) ───────────────────────────────────────────────
 function genProblems() {
   const p = [];
-  for (let a = 0; a <= 10; a++)
-    for (let b = 0; b <= 10; b++)
+  for (let a = 5; a <= 20; a++)
+    for (let b = 5; b <= 20; b++)
       p.push({ a, op: '+', b, ans: a + b });
-  for (let a = 1; a <= 10; a++)
-    for (let b = 1; b <= a; b++)
+  for (let a = 5; a <= 20; a++)
+    for (let b = 5; b <= a; b++)
       p.push({ a, op: '-', b, ans: a - b });
   for (let i = p.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -110,7 +204,7 @@ function genProblems() {
 }
 
 const PROBLEMS = genProblems();
-const state = { idx: 0, mastered: new Set(), celebrating: false };
+const state = { idx: 0, mastered: new Set(), celebrating: false, answer: '', correctStreak: 0 };
 
 function loadProgress() {
   try {
@@ -125,6 +219,17 @@ function saveProgress() {
 const cur = () => PROBLEMS[state.idx];
 const probKey = p => p.a + p.op + p.b;
 
+function updateDisplay() {
+  const el = document.getElementById('answer-display');
+  if (state.answer === '') {
+    el.textContent = '?';
+    el.className = '';
+  } else {
+    el.textContent = state.answer;
+    el.className = 'has-value';
+  }
+}
+
 function render(animate) {
   const p = cur();
   document.getElementById('num-a').textContent = p.a;
@@ -133,6 +238,8 @@ function render(animate) {
   document.getElementById('card-badge').textContent =
     (state.idx + 1) + '/' + PROBLEMS.length +
     (state.mastered.size ? '  ·  ✓ ' + state.mastered.size : '');
+  state.answer = '';
+  updateDisplay();
   if (animate) anim('problem');
 }
 
@@ -143,7 +250,6 @@ function anim(id) {
 
 function next() {
   state.idx = (state.idx + 1) % PROBLEMS.length;
-  document.getElementById('answer-input').value = '';
   render(true);
 }
 
@@ -156,14 +262,24 @@ function speakProblem() {
   window.speechSynthesis.speak(u);
 }
 
+function numpadPress(v) {
+  if (state.celebrating) return;
+  if (state.answer.length < 3) state.answer += v;
+  updateDisplay();
+}
+function numpadDel() {
+  if (state.celebrating) return;
+  state.answer = state.answer.slice(0, -1);
+  updateDisplay();
+}
+
 function checkTyped() {
   if (state.celebrating) return;
-  const val = document.getElementById('answer-input').value.trim();
-  if (!val) return;
-  if (parseInt(val, 10) === cur().ans) {
+  if (!state.answer) return;
+  if (parseInt(state.answer, 10) === cur().ans) {
     celebrate();
   } else {
-    shake();
+    shakeDisplay();
   }
 }
 
@@ -171,6 +287,7 @@ function celebrate() {
   state.celebrating = true;
   state.mastered.add(probKey(cur()));
   saveProgress();
+  state.correctStreak++;
   const ov = document.getElementById('celebration');
   ov.innerHTML = '';
   const wrap = document.createElement('div'); wrap.className = 'confetti-wrap';
@@ -187,20 +304,162 @@ function celebrate() {
   const bw = document.createElement('div'); bw.className = 'big-answer';
   bw.textContent = cur().ans;
   ov.appendChild(bw);
-  setTimeout(() => { ov.innerHTML = ''; state.celebrating = false; next(); }, 1350);
+  setTimeout(() => {
+    ov.innerHTML = ''; state.celebrating = false;
+    if (state.correctStreak > 0 && state.correctStreak % 5 === 0) {
+      launchSnake();
+    } else {
+      next();
+    }
+  }, 1350);
 }
 
-function shake() {
-  const el = document.getElementById('answer-input');
+function shakeDisplay() {
+  const el = document.getElementById('answer-display');
   el.classList.remove('wrong'); void el.offsetWidth; el.classList.add('wrong');
-  setTimeout(() => { el.classList.remove('wrong'); el.value = ''; }, 400);
+  setTimeout(() => { el.classList.remove('wrong'); state.answer = ''; updateDisplay(); }, 400);
 }
 
+// Button wiring
+document.querySelectorAll('.nk[data-v]').forEach(btn => {
+  btn.addEventListener('click', () => numpadPress(btn.dataset.v));
+});
+document.getElementById('del-btn')  .addEventListener('click', numpadDel);
+document.getElementById('check-btn').addEventListener('click', checkTyped);
 document.getElementById('speak-btn').addEventListener('click', e => { e.stopPropagation(); speakProblem(); });
-document.getElementById('check-btn').addEventListener('click', e => { e.stopPropagation(); checkTyped(); });
 document.getElementById('skip-btn') .addEventListener('click', e => { e.stopPropagation(); next(); });
 document.getElementById('home-btn') .addEventListener('click', e => { e.stopPropagation(); window.location.href = 'scout.html'; });
-document.getElementById('answer-input').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); checkTyped(); } });
+
+// ── Snake ───────────────────────────────────────────────────────────────────
+const snake = {
+  active: false, dir: {x:1,y:0}, nextDir: {x:1,y:0},
+  body: [], food: {x:0,y:0}, timer: null,
+  COLS: 20, ROWS: 20, CELL: 16,
+};
+
+function launchSnake() {
+  const overlay = document.getElementById('snake-overlay');
+  const dpad    = document.getElementById('dpad');
+  const canvas  = document.getElementById('snake-canvas');
+  const msg     = document.getElementById('snake-msg');
+
+  // Size canvas to fit screen
+  const maxW = Math.min(window.innerWidth - 48, 380);
+  snake.COLS = Math.floor(maxW / snake.CELL);
+  snake.ROWS = Math.floor((window.innerHeight * 0.65) / snake.CELL);
+  canvas.width  = snake.COLS * snake.CELL;
+  canvas.height = snake.ROWS * snake.CELL;
+
+  const mid = { x: Math.floor(snake.COLS/2), y: Math.floor(snake.ROWS/2) };
+  snake.body = [mid, {x: mid.x-1, y: mid.y}, {x: mid.x-2, y: mid.y}];
+  snake.dir  = {x:1, y:0};
+  snake.nextDir = {x:1, y:0};
+  placeFood();
+  msg.textContent = '🐍 5 correct! Play Snake!';
+  overlay.classList.add('active');
+  dpad.classList.add('active');
+  snake.active = true;
+  snake.timer = setInterval(snakeTick, 150);
+}
+
+function placeFood() {
+  const occupied = new Set(snake.body.map(s => s.x+','+s.y));
+  let f;
+  do { f = { x: Math.floor(Math.random()*snake.COLS), y: Math.floor(Math.random()*snake.ROWS) }; }
+  while (occupied.has(f.x+','+f.y));
+  snake.food = f;
+}
+
+function snakeTick() {
+  snake.dir = snake.nextDir;
+  const head = snake.body[0];
+  const newHead = { x: (head.x + snake.dir.x + snake.COLS) % snake.COLS,
+                    y: (head.y + snake.dir.y + snake.ROWS) % snake.ROWS };
+  // Self collision
+  if (snake.body.some(s => s.x === newHead.x && s.y === newHead.y)) {
+    snakeDie();
+    return;
+  }
+  snake.body.unshift(newHead);
+  if (newHead.x === snake.food.x && newHead.y === snake.food.y) {
+    placeFood(); // grow: don't pop
+  } else {
+    snake.body.pop();
+  }
+  drawSnake();
+}
+
+function drawSnake() {
+  const canvas = document.getElementById('snake-canvas');
+  const ctx = canvas.getContext('2d');
+  const C = snake.CELL;
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+  // Food
+  ctx.fillStyle = '#EA580C';
+  ctx.beginPath();
+  ctx.arc(snake.food.x*C + C/2, snake.food.y*C + C/2, C/2 - 1, 0, Math.PI*2);
+  ctx.fill();
+  // Body
+  snake.body.forEach((s, i) => {
+    ctx.fillStyle = i === 0 ? '#fff' : '#FB923C';
+    const r = i === 0 ? 4 : 3;
+    roundRect(ctx, s.x*C+1, s.y*C+1, C-2, C-2, r);
+    ctx.fill();
+  });
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y); ctx.arcTo(x+w, y, x+w, y+r, r);
+  ctx.lineTo(x+w, y+h-r); ctx.arcTo(x+w, y+h, x+w-r, y+h, r);
+  ctx.lineTo(x+r, y+h); ctx.arcTo(x, y+h, x, y+h-r, r);
+  ctx.lineTo(x, y+r); ctx.arcTo(x, y, x+r, y, r);
+  ctx.closePath();
+}
+
+function snakeDie() {
+  clearInterval(snake.timer);
+  snake.active = false;
+  const msg = document.getElementById('snake-msg');
+  msg.textContent = '💀 Game over! Back to math…';
+  // Flash the snake red
+  const canvas = document.getElementById('snake-canvas');
+  const ctx = canvas.getContext('2d');
+  snake.body.forEach(s => {
+    ctx.fillStyle = '#EF4444';
+    roundRect(ctx, s.x*snake.CELL+1, s.y*snake.CELL+1, snake.CELL-2, snake.CELL-2, 3);
+    ctx.fill();
+  });
+  setTimeout(endSnake, 1200);
+}
+
+function endSnake() {
+  document.getElementById('snake-overlay').classList.remove('active');
+  document.getElementById('dpad').classList.remove('active');
+  snake.active = false;
+  next();
+}
+
+// D-pad controls
+function setDir(dx, dy) {
+  if (!snake.active) return;
+  // Prevent reversing
+  if (dx !== 0 && snake.dir.x !== 0) return;
+  if (dy !== 0 && snake.dir.y !== 0) return;
+  snake.nextDir = {x: dx, y: dy};
+}
+document.getElementById('dp-up')   .addEventListener('click', () => setDir(0,-1));
+document.getElementById('dp-down') .addEventListener('click', () => setDir(0, 1));
+document.getElementById('dp-left') .addEventListener('click', () => setDir(-1,0));
+document.getElementById('dp-right').addEventListener('click', () => setDir( 1,0));
+
+// Keyboard fallback
+document.addEventListener('keydown', e => {
+  if (!snake.active) return;
+  const map = { ArrowUp:[0,-1], ArrowDown:[0,1], ArrowLeft:[-1,0], ArrowRight:[1,0] };
+  if (map[e.key]) { e.preventDefault(); setDir(...map[e.key]); }
+});
 
 loadProgress(); render(false);
 </script>

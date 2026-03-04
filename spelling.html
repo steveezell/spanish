@@ -15,49 +15,47 @@
       font-family: 'Nunito', -apple-system, 'Helvetica Neue', Arial, sans-serif;
       min-height: 100%; background: linear-gradient(160deg, #2DD4BF, #0F766E);
       display: flex; flex-direction: column; align-items: center;
-      justify-content: center; padding: 72px 24px 40px;
+      justify-content: center; padding: 52px 16px 16px;
       touch-action: manipulation;
     }
     #top-bar {
-      position: fixed; top: 0; left: 0; right: 0; height: 56px;
+      position: fixed; top: 0; left: 0; right: 0; height: 48px;
       display: flex; align-items: center; justify-content: space-between;
-      padding: 0 16px; z-index: 100;
+      padding: 0 14px; z-index: 100;
     }
-    #word-count {
-      font-size: 15px; font-weight: 800; color: rgba(255,255,255,0.7);
-    }
+    #word-count { font-size: 14px; font-weight: 800; color: rgba(255,255,255,0.7); }
     .btn-icon {
-      background: none; border: none; cursor: pointer; font-size: 26px;
-      padding: 8px; border-radius: 50%; opacity: 0.65;
+      background: none; border: none; cursor: pointer; font-size: 22px;
+      padding: 6px; border-radius: 50%; opacity: 0.65;
       -webkit-tap-highlight-color: transparent; line-height: 1;
       transition: transform 0.1s;
     }
     .btn-icon:active { transform: scale(0.88); }
     .card {
-      background: rgba(255,255,255,0.13); border-radius: 24px;
-      padding: 32px 28px 28px; width: 100%; max-width: 460px;
-      display: flex; flex-direction: column; align-items: center; gap: 20px;
+      background: rgba(255,255,255,0.13); border-radius: 20px;
+      padding: 16px 18px 14px; width: 100%; max-width: 420px;
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
       box-shadow: 0 8px 32px rgba(0,0,0,0.2);
     }
     #speak-btn {
-      font-size: 72px; background: none; border: none; cursor: pointer;
+      font-size: 48px; background: none; border: none; cursor: pointer;
       line-height: 1; -webkit-tap-highlight-color: transparent;
       transition: transform 0.12s;
     }
     #speak-btn:active { transform: scale(0.88); }
     .hear-label {
-      font-size: 17px; font-weight: 800; color: rgba(255,255,255,0.75);
-      margin-top: -12px;
+      font-size: 13px; font-weight: 800; color: rgba(255,255,255,0.75);
+      margin-top: -4px;
     }
     .hint {
-      font-size: clamp(22px, 5.5vw, 34px); font-weight: 900;
+      font-size: clamp(18px, 4.5vw, 28px); font-weight: 900;
       color: rgba(255,255,255,0.55); letter-spacing: 0.25em; font-family: monospace;
       word-break: break-all; text-align: center;
     }
     #input-field {
-      width: 100%; padding: 14px 18px; border-radius: 16px;
+      width: 100%; padding: 10px 14px; border-radius: 14px;
       border: 3px solid rgba(255,255,255,0.4); background: rgba(255,255,255,0.92);
-      font-family: 'Nunito', sans-serif; font-size: clamp(28px, 7vw, 44px);
+      font-family: 'Nunito', sans-serif; font-size: clamp(22px, 5.5vw, 36px);
       font-weight: 900; text-align: center; color: #0F766E;
       outline: none; -webkit-appearance: none;
       transition: border-color 0.15s;
@@ -66,15 +64,15 @@
     #input-field.wrong { animation: shake 0.38s ease-in-out; border-color: #EF4444; }
     @keyframes shake { 0%,100%{transform:translateX(0);}20%{transform:translateX(-10px);}40%{transform:translateX(10px);}60%{transform:translateX(-8px);}80%{transform:translateX(5px);} }
     #submit-btn {
-      width: 100%; padding: 15px; border-radius: 16px; border: none;
+      width: 100%; padding: 11px; border-radius: 14px; border: none;
       background: rgba(255,255,255,0.92); color: #0F766E;
-      font-family: 'Nunito', sans-serif; font-size: 22px; font-weight: 900;
+      font-family: 'Nunito', sans-serif; font-size: 19px; font-weight: 900;
       cursor: pointer; -webkit-tap-highlight-color: transparent;
       transition: transform 0.1s, opacity 0.1s;
     }
     #submit-btn:active { transform: scale(0.97); opacity: 0.85; }
     #skip-btn-card {
-      font-size: 15px; font-weight: 800; color: rgba(255,255,255,0.5);
+      font-size: 13px; font-weight: 800; color: rgba(255,255,255,0.5);
       background: none; border: none; cursor: pointer;
       -webkit-tap-highlight-color: transparent;
     }
@@ -83,12 +81,45 @@
     .cp { position: absolute; animation: cfall linear forwards; }
     @keyframes cfall { from { transform: translateY(-80px) rotate(0deg); opacity: 1; } to { transform: translateY(110vh) rotate(600deg); opacity: 0; } }
     .big-word-cel {
-      font-family: 'Nunito', sans-serif; font-size: clamp(48px, 12vw, 110px); font-weight: 900;
-      background: rgba(255,255,255,0.93); border-radius: 20px; padding: 12px 40px;
+      font-family: 'Nunito', sans-serif; font-size: clamp(40px, 10vw, 90px); font-weight: 900;
+      background: rgba(255,255,255,0.93); border-radius: 20px; padding: 10px 36px;
       box-shadow: 0 8px 40px rgba(0,0,0,0.25); animation: popIn 0.35s cubic-bezier(0.34,1.56,0.64,1);
       color: #0F766E;
     }
     @keyframes popIn { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+    /* Snake overlay */
+    #snake-overlay {
+      display: none; position: fixed; inset: 0; z-index: 500;
+      background: #000; flex-direction: column; align-items: center; justify-content: center;
+    }
+    #snake-overlay.active { display: flex; }
+    #snake-canvas { border: 3px solid #2DD4BF; border-radius: 6px; display: block; touch-action: none; }
+    #snake-msg {
+      color: #2DD4BF; font-family: 'Nunito', sans-serif; font-size: 26px; font-weight: 900;
+      margin-bottom: 16px; text-align: center;
+    }
+    /* D-pad */
+    #dpad {
+      position: fixed; bottom: 24px; left: 24px;
+      display: none; user-select: none;
+    }
+    #dpad.active { display: grid; }
+    #dpad {
+      grid-template-columns: 52px 52px 52px;
+      grid-template-rows: 52px 52px 52px;
+      gap: 4px;
+    }
+    .dp {
+      background: #2e2e2e; border: none; border-radius: 10px;
+      color: #fff; font-size: 22px; cursor: pointer; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.1s;
+      box-shadow: 0 3px 0 #111;
+    }
+    .dp:active, .dp.pressed { background: #0F766E; }
+    .dp.blank { background: transparent; box-shadow: none; pointer-events: none; }
   </style>
 </head>
 <body>
@@ -110,6 +141,24 @@
 </div>
 
 <div id="celebration"></div>
+
+<!-- Snake overlay -->
+<div id="snake-overlay">
+  <div id="snake-msg">🐍 5 correct! Play Snake!</div>
+  <canvas id="snake-canvas"></canvas>
+</div>
+<div id="dpad">
+  <div class="dp blank"></div>
+  <button class="dp" id="dp-up">▲</button>
+  <div class="dp blank"></div>
+  <button class="dp" id="dp-left">◀</button>
+  <div class="dp blank"></div>
+  <button class="dp" id="dp-right">▶</button>
+  <div class="dp blank"></div>
+  <button class="dp" id="dp-down">▼</button>
+  <div class="dp blank"></div>
+</div>
+
 <script>
 const WORDS = [
   'after','again','any','ask','could','every','fly','from','give','had',
@@ -131,7 +180,7 @@ for (let i = WORDS.length - 1; i > 0; i--) {
   [WORDS[i], WORDS[j]] = [WORDS[j], WORDS[i]];
 }
 
-const state = { idx: 0, mastered: new Set(), celebrating: false };
+const state = { idx: 0, mastered: new Set(), celebrating: false, correctStreak: 0 };
 
 function loadProgress() {
   try {
@@ -188,6 +237,7 @@ function celebrate() {
   state.celebrating = true;
   state.mastered.add(cur());
   saveProgress();
+  state.correctStreak++;
   const ov = document.getElementById('celebration');
   ov.innerHTML = '';
   const wrap = document.createElement('div'); wrap.className = 'confetti-wrap';
@@ -204,7 +254,14 @@ function celebrate() {
   const bw = document.createElement('div'); bw.className = 'big-word-cel';
   bw.textContent = cur();
   ov.appendChild(bw);
-  setTimeout(() => { ov.innerHTML = ''; state.celebrating = false; next(true); }, 1350);
+  setTimeout(() => {
+    ov.innerHTML = ''; state.celebrating = false;
+    if (state.correctStreak > 0 && state.correctStreak % 5 === 0) {
+      launchSnake();
+    } else {
+      next(true);
+    }
+  }, 1350);
 }
 
 document.getElementById('speak-btn')   .addEventListener('click', speakWord);
@@ -212,6 +269,128 @@ document.getElementById('submit-btn')  .addEventListener('click', checkSpelling)
 document.getElementById('skip-btn-card').addEventListener('click', () => { if (!state.celebrating) next(false); });
 document.getElementById('home-btn')    .addEventListener('click', () => window.location.href = 'scout.html');
 document.getElementById('input-field') .addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); checkSpelling(); } });
+
+// ── Snake ───────────────────────────────────────────────────────────────────
+const snake = {
+  active: false, dir: {x:1,y:0}, nextDir: {x:1,y:0},
+  body: [], food: {x:0,y:0}, timer: null,
+  COLS: 20, ROWS: 20, CELL: 16,
+};
+
+function launchSnake() {
+  const overlay = document.getElementById('snake-overlay');
+  const dpad    = document.getElementById('dpad');
+  const canvas  = document.getElementById('snake-canvas');
+  const msg     = document.getElementById('snake-msg');
+
+  const maxW = Math.min(window.innerWidth - 48, 380);
+  snake.COLS = Math.floor(maxW / snake.CELL);
+  snake.ROWS = Math.floor((window.innerHeight * 0.65) / snake.CELL);
+  canvas.width  = snake.COLS * snake.CELL;
+  canvas.height = snake.ROWS * snake.CELL;
+
+  const mid = { x: Math.floor(snake.COLS/2), y: Math.floor(snake.ROWS/2) };
+  snake.body = [mid, {x: mid.x-1, y: mid.y}, {x: mid.x-2, y: mid.y}];
+  snake.dir  = {x:1, y:0};
+  snake.nextDir = {x:1, y:0};
+  placeFood();
+  msg.textContent = '🐍 5 correct! Play Snake!';
+  overlay.classList.add('active');
+  dpad.classList.add('active');
+  snake.active = true;
+  snake.timer = setInterval(snakeTick, 150);
+}
+
+function placeFood() {
+  const occupied = new Set(snake.body.map(s => s.x+','+s.y));
+  let f;
+  do { f = { x: Math.floor(Math.random()*snake.COLS), y: Math.floor(Math.random()*snake.ROWS) }; }
+  while (occupied.has(f.x+','+f.y));
+  snake.food = f;
+}
+
+function snakeTick() {
+  snake.dir = snake.nextDir;
+  const head = snake.body[0];
+  const newHead = { x: (head.x + snake.dir.x + snake.COLS) % snake.COLS,
+                    y: (head.y + snake.dir.y + snake.ROWS) % snake.ROWS };
+  if (snake.body.some(s => s.x === newHead.x && s.y === newHead.y)) {
+    snakeDie();
+    return;
+  }
+  snake.body.unshift(newHead);
+  if (newHead.x === snake.food.x && newHead.y === snake.food.y) {
+    placeFood();
+  } else {
+    snake.body.pop();
+  }
+  drawSnake();
+}
+
+function drawSnake() {
+  const canvas = document.getElementById('snake-canvas');
+  const ctx = canvas.getContext('2d');
+  const C = snake.CELL;
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#2DD4BF';
+  ctx.beginPath();
+  ctx.arc(snake.food.x*C + C/2, snake.food.y*C + C/2, C/2 - 1, 0, Math.PI*2);
+  ctx.fill();
+  snake.body.forEach((s, i) => {
+    ctx.fillStyle = i === 0 ? '#fff' : '#2DD4BF';
+    const r = i === 0 ? 4 : 3;
+    roundRect(ctx, s.x*C+1, s.y*C+1, C-2, C-2, r);
+    ctx.fill();
+  });
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y); ctx.arcTo(x+w, y, x+w, y+r, r);
+  ctx.lineTo(x+w, y+h-r); ctx.arcTo(x+w, y+h, x+w-r, y+h, r);
+  ctx.lineTo(x+r, y+h); ctx.arcTo(x, y+h, x, y+h-r, r);
+  ctx.lineTo(x, y+r); ctx.arcTo(x, y, x+r, y, r);
+  ctx.closePath();
+}
+
+function snakeDie() {
+  clearInterval(snake.timer);
+  snake.active = false;
+  document.getElementById('snake-msg').textContent = '💀 Game over! Back to spelling…';
+  const canvas = document.getElementById('snake-canvas');
+  const ctx = canvas.getContext('2d');
+  snake.body.forEach(s => {
+    ctx.fillStyle = '#EF4444';
+    roundRect(ctx, s.x*snake.CELL+1, s.y*snake.CELL+1, snake.CELL-2, snake.CELL-2, 3);
+    ctx.fill();
+  });
+  setTimeout(endSnake, 1200);
+}
+
+function endSnake() {
+  document.getElementById('snake-overlay').classList.remove('active');
+  document.getElementById('dpad').classList.remove('active');
+  snake.active = false;
+  next(true);
+}
+
+function setDir(dx, dy) {
+  if (!snake.active) return;
+  if (dx !== 0 && snake.dir.x !== 0) return;
+  if (dy !== 0 && snake.dir.y !== 0) return;
+  snake.nextDir = {x: dx, y: dy};
+}
+document.getElementById('dp-up')   .addEventListener('click', () => setDir(0,-1));
+document.getElementById('dp-down') .addEventListener('click', () => setDir(0, 1));
+document.getElementById('dp-left') .addEventListener('click', () => setDir(-1,0));
+document.getElementById('dp-right').addEventListener('click', () => setDir( 1,0));
+
+document.addEventListener('keydown', e => {
+  if (!snake.active) return;
+  const map = { ArrowUp:[0,-1], ArrowDown:[0,1], ArrowLeft:[-1,0], ArrowRight:[1,0] };
+  if (map[e.key]) { e.preventDefault(); setDir(...map[e.key]); }
+});
 
 loadProgress(); render(false);
 </script>
