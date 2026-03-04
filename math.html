@@ -110,13 +110,11 @@
     #dpad {
       position: fixed; bottom: 24px; left: 24px;
       display: none; user-select: none;
-    }
-    #dpad.active { display: grid; }
-    #dpad {
       grid-template-columns: 52px 52px 52px;
       grid-template-rows: 52px 52px 52px;
       gap: 4px;
     }
+    #dpad.active { display: grid; }
     .dp {
       background: #2e2e2e; border: none; border-radius: 10px;
       color: #fff; font-size: 22px; cursor: pointer; line-height: 1;
@@ -125,7 +123,7 @@
       transition: background 0.1s;
       box-shadow: 0 3px 0 #111;
     }
-    .dp:active, .dp.pressed { background: #EA580C; }
+    .dp:active { background: #EA580C; }
     .dp.blank { background: transparent; box-shadow: none; pointer-events: none; }
   </style>
 </head>
@@ -306,7 +304,7 @@ function celebrate() {
   ov.appendChild(bw);
   setTimeout(() => {
     ov.innerHTML = ''; state.celebrating = false;
-    if (state.correctStreak > 0 && state.correctStreak % 5 === 0) {
+    if (state.correctStreak % 5 === 0) {
       launchSnake();
     } else {
       next();
@@ -335,6 +333,7 @@ const snake = {
   active: false, dir: {x:1,y:0}, nextDir: {x:1,y:0},
   body: [], food: {x:0,y:0}, timer: null,
   COLS: 20, ROWS: 20, CELL: 16,
+  canvas: null, ctx: null,
 };
 
 function launchSnake() {
@@ -355,10 +354,13 @@ function launchSnake() {
   snake.dir  = {x:1, y:0};
   snake.nextDir = {x:1, y:0};
   placeFood();
+  snake.canvas = canvas;
+  snake.ctx = canvas.getContext('2d');
   msg.textContent = '🐍 5 correct! Play Snake!';
   overlay.classList.add('active');
   dpad.classList.add('active');
   snake.active = true;
+  if (snake.timer) clearInterval(snake.timer);
   snake.timer = setInterval(snakeTick, 150);
 }
 
@@ -390,8 +392,7 @@ function snakeTick() {
 }
 
 function drawSnake() {
-  const canvas = document.getElementById('snake-canvas');
-  const ctx = canvas.getContext('2d');
+  const { canvas, ctx } = snake;
   const C = snake.CELL;
   ctx.fillStyle = '#000'; ctx.fillRect(0, 0, canvas.width, canvas.height);
   // Food
@@ -421,11 +422,8 @@ function roundRect(ctx, x, y, w, h, r) {
 function snakeDie() {
   clearInterval(snake.timer);
   snake.active = false;
-  const msg = document.getElementById('snake-msg');
-  msg.textContent = '💀 Game over! Back to math…';
-  // Flash the snake red
-  const canvas = document.getElementById('snake-canvas');
-  const ctx = canvas.getContext('2d');
+  document.getElementById('snake-msg').textContent = '💀 Game over! Back to math…';
+  const { ctx } = snake;
   snake.body.forEach(s => {
     ctx.fillStyle = '#EF4444';
     roundRect(ctx, s.x*snake.CELL+1, s.y*snake.CELL+1, snake.CELL-2, snake.CELL-2, 3);
