@@ -103,9 +103,9 @@
     #dpad {
       position: fixed; bottom: 24px; left: 24px;
       display: none; user-select: none; z-index: 600;
-      grid-template-columns: 52px 52px 52px;
-      grid-template-rows: 52px 52px 52px;
-      gap: 4px;
+      grid-template-columns: 72px 72px 72px;
+      grid-template-rows: 72px 72px 72px;
+      gap: 6px;
     }
     #dpad.active { display: grid; }
     .dp {
@@ -300,7 +300,7 @@ function launchSnake() {
   dpad.classList.add('active');
   snake.active = true;
   if (snake.timer) clearInterval(snake.timer);
-  snake.timer = setInterval(snakeTick, 150);
+  snake.timer = setInterval(snakeTick, 220);
 }
 
 function placeFood() {
